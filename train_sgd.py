@@ -392,7 +392,7 @@ if __name__ == "__main__":
 	#
 	X = np.load("./data_simu_data/X.npy")
 	# Y and Y_pos
-	K = 13										## TODO: specify the number of tissues
+	K = 28										## TODO: specify the number of tissues
 	Y = []
 	Y_pos = []
 	for k in range(K):
@@ -536,7 +536,6 @@ if __name__ == "__main__":
 
 
 
-
 	##=========================================
 	## prepare for the stochastic sample pool
 	##=========================================
@@ -576,7 +575,7 @@ if __name__ == "__main__":
 			##============================================
 			## error before
 			error = cal_error()
-			print "[error_before] current total error:", error
+			print "[error_before] current total error (train):", error
 			list_error.append(error)
 			##============================================
 

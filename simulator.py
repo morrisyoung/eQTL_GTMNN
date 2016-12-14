@@ -12,12 +12,24 @@ import math
 
 
 
-##==== scale of the input data (10% of real data)
+##==== scale of the input data (real data)
+'''
 I = 2445192						# num of SNPs
 J = 19425						# num of genes
 D = 400							# num of cell factors
 K = 28							# num of tissues
 N = 449							# num of individuals
+'''
+
+
+##==== scale of the input data (real data)
+I = 2445192						# num of SNPs
+J = 19425						# num of genes
+D = 400							# num of cell factors
+K = 28							# num of tissues
+N = 449							# num of individuals
+
+
 
 
 
@@ -34,11 +46,32 @@ beta_cellfactor2 = []		# tensor (tissue specific) of second layer cell factor be
 
 
 
+
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
 
+
+
+
+def reformat_matrix(matrix, filename):
+	shape = matrix.shape
+	dimension1 = shape[0]
+	dimension2 = shape[1]
+
+	file = open(filename, 'w')
+	for i in range(dimension1):
+		for j in range(dimension2):
+			value = matrix[i][j]
+			if j != (dimension2-1):
+				file.write(str(value) + '\t')
+			else:
+				file.write(str(value))
+		file.write('\n')
+	file.close()
+
+	return
 
 
 
@@ -53,17 +86,12 @@ def simu_snp():
 	print "simu X"
 
 	# X
-	for n in range(N):
-		X.append([])
-		for i in range(I):
-			# simu
-			dosage = np.random.random_sample() * 2
-			X[n].append(dosage)
-	X = np.array(X)
+	X = np.random.random_sample((N, I)) * 2
 	print "simulated X shape:",
 	print X.shape
 
 	return
+
 
 ##================
 ##==== simu para (NOTE: we have the intercept term anywhere)
@@ -73,39 +101,20 @@ def simu_beta_cellfactor():
 	global beta_cellfactor1, beta_cellfactor2
 	global D, I, J, K
 
-	print "simu beta_cellfactor1..."
-
 	# beta_cellfactor1
-	beta_cellfactor1 = []
-	for d in range(D):
-		beta_cellfactor1.append([])
-		amount = I + 1														# NOTE: intercept
-		for index in range(amount):
-			# simu
-			beta = np.random.normal()
-			beta_cellfactor1[d].append(beta)
-	beta_cellfactor1 = np.array(beta_cellfactor1)
+	print "simu beta_cellfactor1..."
+	beta_cellfactor1 = np.random.normal(size=(D, I+1)) 						# NOTE: intercept
 	print "simulated beta_cellfactor1 shape:",
 	print beta_cellfactor1.shape
 
-	print "simu beta_cellfactor2..."
-
 	# beta_cellfactor2
-	beta_cellfactor2 = []
-	for k in range(K):
-		beta_cellfactor2.append([])
-		for j in range(J):
-			beta_cellfactor2[k].append([])
-			amount = D + 1													# NOTE: intercept
-			for index in range(amount):
-				# simu
-				beta = np.random.normal()
-				beta_cellfactor2[k][j].append(beta)
-	beta_cellfactor2 = np.array(beta_cellfactor2)
+	print "simu beta_cellfactor2..."
+	beta_cellfactor2 = np.random.normal(size=(K, J, D+1)) 					# NOTE: intercept
 	print "simulated beta_cellfactor2 shape:",
 	print beta_cellfactor2.shape
 
 	return
+
 
 ##================
 ##==== simu output
@@ -127,10 +136,14 @@ def simu_gene():
 	beta_cellfactor1_reshape = beta_cellfactor1.T 							# (I+1) x D
 	m_factor = np.dot(X_new, beta_cellfactor1_reshape)						# N x D
 	# logistic twist
+	'''
 	for n in range(N):
 		for d in range(D):
 			x = m_factor[n][d]
 			m_factor[n][d] = 1.0 / (1.0 + math.exp(-x))
+	'''
+	m_factor = 1.0 / (1.0+np.exp(-m_factor))
+
 	# second layer
 	array_ones = (np.array([np.ones(N)])).T
 	m_factor_new = np.concatenate((m_factor, array_ones), axis=1)			# N x (D+1)
@@ -165,6 +178,7 @@ def simu_gene():
 
 
 
+
 ##================
 ##==== main
 ##================
@@ -178,6 +192,7 @@ if __name__ == "__main__":
 
 
 
+	"""
 	##====================================================
 	## simu real data
 	##====================================================
@@ -192,11 +207,14 @@ if __name__ == "__main__":
 	beta_cellfactor1 = beta_cellfactor1 / 10
 
 
+
 	##==== cpmpile
 	simu_gene()
 
+
 	##==== save data
 	np.save("./data_simu_data/X", X)
+
 
 
 
@@ -231,6 +249,9 @@ if __name__ == "__main__":
 
 	np.save("./data_simu_data/beta_cellfactor1", beta_cellfactor1)
 	np.save("./data_simu_data/beta_cellfactor2", beta_cellfactor2)
+	"""
+
+
 
 
 
@@ -250,8 +271,13 @@ if __name__ == "__main__":
 
 
 	##==== save data
+	print beta_cellfactor1.shape
+	print beta_cellfactor2.shape
 	np.save("./data_simu_init/beta_cellfactor1", beta_cellfactor1)
 	np.save("./data_simu_init/beta_cellfactor2", beta_cellfactor2)
+
+	#reformat_matrix(beta_cellfactor1, "./data_simu_init/beta_cellfactor1.txt")
+
 
 
 

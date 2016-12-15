@@ -1,5 +1,7 @@
+"""
 from math import *
 import random
+
 
 landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
 world_size = 100.0
@@ -136,3 +138,88 @@ if eval(myrobot, p) > 0.0:
         print 'Final particle #', i*100, p[i*100]
     print ' '
     print 'Actual Robot Location', myrobot
+"""
+
+
+
+
+
+
+""" cal num of snps for each chr
+import numpy as np
+
+
+data = np.load("./list_snp_info.npy")
+print len(data)
+rep = {}
+for i in range(1, 23):
+	chr = str(i)
+	rep[chr] = 0
+for i in range(len(data)):
+	chr = data[i][1]
+	rep[chr] += 1
+
+list_pos = []
+for i in range(1, 23):
+	chr = str(i)
+	list_pos.append(rep[chr])
+list_pos = np.array(list_pos)
+np.save("./list_num_snp", list_pos)
+
+for i in range(len(list_pos)):
+	print i, list_pos[i]
+print np.sum(list_pos)
+"""
+
+
+
+
+
+import numpy as np
+
+
+list_gene = np.load("./data_prepared/Gene_list.npy")
+print "there are # of genes:", len(list_gene)
+
+
+##==== gene tss repo
+rep_gene_tss = {}
+file = open("../../GTEx_data/data_raw/gene_tss_gencode.v19.v6p.txt", 'r')
+while 1:
+	line = (file.readline()).strip()
+	if not line:
+		break
+
+	line = line.split('\t')
+	if line[1] == 'X' or line[1] == 'Y' or line[1] == 'MT':
+		continue
+
+	gene = line[0]
+	chr = int(line[1])
+	tss = int(line[2])
+	rep_gene_tss[gene] = (chr, tss)
+file.close()
+
+
+
+rep = {}
+for i in range(1, 23):
+	chr = str(i)
+	rep[chr] = 0
+for gene in list_gene:
+	chr = str(rep_gene_tss[gene][0])
+	rep[chr] += 1
+
+list_pos = []
+for i in range(1, 23):
+	chr = str(i)
+	list_pos.append(rep[chr])
+list_pos = np.array(list_pos)
+np.save("./data_prepared/list_num_gene", list_pos)
+
+for i in range(len(list_pos)):
+	print i, list_pos[i]
+print np.sum(list_pos)
+
+
+

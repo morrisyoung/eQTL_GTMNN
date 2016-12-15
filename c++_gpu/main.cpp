@@ -3,6 +3,17 @@
 
 
 
+// some new design:
+//	1. the second layer could be saved all in GPU memory (including the data), but the first layer need to be specially designed especially when more data comes
+//	2. the constrain part should be designed with more flexibility
+//	3. 
+
+
+
+
+
+
+
 
 
 #include <iostream>
@@ -133,6 +144,21 @@ int main(int argc, char *argv[])
 
 
 
+
+
+
+
+	//==== timer starts
+	struct timeval time_start_total;
+	struct timeval time_end_total;
+	double time_diff_total;
+	gettimeofday(&time_start_total, NULL);
+
+
+
+
+
+
 	//============
 	// train (mini-batch)
 	//============
@@ -146,6 +172,8 @@ int main(int argc, char *argv[])
 		gettimeofday(&time_start, NULL);
 
 
+
+		/*
 		//========
 		if(iter1 == 0)
 		{
@@ -153,6 +181,7 @@ int main(int argc, char *argv[])
 			cout << "[error before] current total error (training): " << error_before << endl;
 			list_error.push_back(error_before);
 		}
+		*/
 
 
 
@@ -208,6 +237,23 @@ int main(int argc, char *argv[])
 		}
 		*/
 	}
+
+
+
+
+
+
+	//==== timer ends
+	gettimeofday(&time_end_total, NULL);
+	time_diff_total = (double)(time_end_total.tv_sec-time_start_total.tv_sec) + (double)(time_end_total.tv_usec-time_start_total.tv_usec)/1000000;
+	printf("time used all is %f seconds.\n", time_diff_total);
+	cout << "####" << endl;
+
+
+
+
+
+
 
 
 	//==== pre-allocate some GPU memory

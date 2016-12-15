@@ -11,13 +11,16 @@ list_tissue = ['tissue#0', 'tissue#1', 'tissue#2', 'tissue#3', 'tissue#4', 'tiss
 
 
 
+
 if __name__=="__main__":
 
 
 
+
+	'''
 	##==== total likelihood
 	arr = np.load("./result/list_error.npy")
-	#arr1 = np.load("./result/list_error_test.npy")
+	arr1 = np.load("./result/list_error_test.npy")
 
 
 
@@ -31,7 +34,8 @@ if __name__=="__main__":
 	#print len(list_tissue)
 	plt.plot(arr, 'r-')
 
-	#plt.plot(arr1, 'b-')
+
+	plt.plot(arr1, 'b-')
 
 
 	plt.xlabel("number of batches")
@@ -40,6 +44,40 @@ if __name__=="__main__":
 	plt.grid()
 	## the total variance of samples for this simulation set
 	#plt.plot([1489807752.51]*len(arr), 'b-')
+	'''
+
+
+
+
+
+
+
+
+	## NOTE: plot double legend
+	x = np.arange(0, 201, 1)
+	y1 = np.load("./result/list_error.npy")
+	y2 = np.load("./result/list_error_test.npy")
+	x = np.arange(0, len(y1), 1)
+
+	fig, ax1 = plt.subplots()
+
+	ax2 = ax1.twinx()
+	ax1.plot(x, y1, 'b-', label="Training")
+	ax2.plot(x, y2, 'g-', label="Testing")
+
+	ax1.set_xlabel('# of updates')
+	ax1.set_ylabel('training total squared error', color='b')
+	ax2.set_ylabel('testing total squared error', color='g')
+
+
+	blue_line = mlines.Line2D([], [], color='b', markersize=15, label='Training')
+	red_line = mlines.Line2D([], [], color='g', markersize=15, label='Testing')
+	plt.legend(handles=[blue_line, red_line])
+
+
+	plt.title("training and testing error with updates")
+	plt.show()
+
 
 
 

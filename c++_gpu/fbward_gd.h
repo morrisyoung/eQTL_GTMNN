@@ -20,7 +20,7 @@ using namespace std;
 
 
 
-void fbward_gd(int);
+void fbward_gd();
 
 
 

@@ -87,6 +87,11 @@ list_sample = []
 ##=============/=============/=============/=============/=============/=============/=============/=============
 
 
+
+
+
+
+
 ##==== forward/backward propogation, and gradient descent
 def forward_backward_gd():
 	global X, Y, Y_pos
@@ -233,7 +238,7 @@ def forward_backward_gd():
 		# N x D, N x D --> N x D
 		m_temp = np.multiply(m_temp, m_factor_der[Y_pos_bacth[i]])
 		# D x N, N x (I+1)
-		der_cellfactor1 += np.dot(m_temp.T, X[Y_pos_bacth[i]])				# NOTE: this is too large for GPU
+		der_cellfactor1 += np.dot(m_temp.T, X[Y_pos_bacth[i]])				# NOTE: this is too large for GPU --> we do the m_temp first, and then do Beta part by part
 	der_cellfactor1 = der_cellfactor1 / N_sample
 
 
@@ -290,6 +295,7 @@ def cal_error():
 	##================================================================================================================
 
 
+	"""
 	for k in range(K):
 
 		##=============
@@ -313,7 +319,18 @@ def cal_error():
 		##=============
 		##=============
 
+
+
+		## DEBUG
+		print k,
+		print error
+
+
+	print error_total
+	"""
+
 	return error_total
+
 
 
 
@@ -375,6 +392,7 @@ def cal_error_test():
 
 
 
+
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
@@ -406,8 +424,8 @@ if __name__ == "__main__":
 	##========================================================================
 	##==== load data
 	##
-	#fileheader = "./data_simu_data/"
-	fileheader = "../preprocess/data_train/"
+	fileheader = "../workbench1/data_simu_data/"
+	#fileheader = "../preprocess/data_train/"
 
 	#
 	X = np.load(fileheader + "X.npy")
@@ -424,8 +442,8 @@ if __name__ == "__main__":
 	Y_pos = np.array(Y_pos)
 
 	##
-	#fileheader = "./data_simu_init/"
-	fileheader = "../preprocess/data_real_init/"
+	fileheader = "../workbench1/data_simu_init/"
+	#fileheader = "../preprocess/data_real_init/"
 	#
 	beta_cellfactor1 = np.load(fileheader + "beta_cellfactor1.npy")
 	beta_cellfactor2 = np.load(fileheader + "beta_cellfactor2.npy")
@@ -444,6 +462,7 @@ if __name__ == "__main__":
 	## X
 	array_ones = (np.array([np.ones(N)])).T
 	X = np.concatenate((X, array_ones), axis=1)									# N x (I+1)
+
 
 
 	##========================================================================
@@ -471,7 +490,6 @@ if __name__ == "__main__":
 	N_test = len(X_test)
 	array_ones = (np.array([np.ones(N_test)])).T
 	X_test = np.concatenate((X_test, array_ones), axis=1)						# N x (I+1)
-
 
 
 
@@ -518,6 +536,8 @@ if __name__ == "__main__":
 		start_time = timeit.default_timer()
 
 
+
+		'''
 		if iter1 == 0:
 			## error before
 			##============================================
@@ -531,7 +551,10 @@ if __name__ == "__main__":
 			##============================================
 
 
+
 		forward_backward_gd()
+		'''
+
 
 
 		## error after
@@ -541,10 +564,12 @@ if __name__ == "__main__":
 		list_error.append(error)
 		np.save("./result/list_error", np.array(list_error))
 
+		'''
 		error = cal_error_test()
 		print "[error_after] current total error (test):", error
 		list_error_test.append(error)
 		np.save("./result/list_error_test", np.array(list_error_test))
+		'''
 		##============================================
 
 
@@ -570,10 +595,14 @@ if __name__ == "__main__":
 	##==== timer, for speed test
 	print "speed:", (timeit.default_timer() - start_time_total) / num_iter
 
+	'''
 	##==== save the model
 	np.save("./result/beta_cellfactor1", beta_cellfactor1)
 	np.save("./result/beta_cellfactor2", beta_cellfactor2)
 	print "now it's done..."
+	'''
+
+
 
 
 

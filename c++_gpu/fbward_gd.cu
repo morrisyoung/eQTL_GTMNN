@@ -33,6 +33,7 @@
 
 
 
+
 using namespace std;
 
 
@@ -43,7 +44,6 @@ using namespace std;
 
 
 //// TODO: to adapt this
-
 
 
 
@@ -134,7 +134,7 @@ void batch_fill(int k)
 
 
 // do forward/backward propogation, gradient descent (in multiple tissues)
-void fbward_gd(int k)
+void fbward_gd()
 {
 	// fill in the following:
 	//	d_X_batch, d_Y_batch
@@ -262,12 +262,16 @@ void fbward_gd(int k)
 
 
 
+
+
 	// above: forward-propogation
 	//=============/=============/=============/=============/=============/=============/=============/=============
 	//=============/=============/=============/=============/=============/=============/=============/=============
 	//=============/=============/=============/=============/=============/=============/=============/=============
 	//=============/=============/=============/=============/=============/=============/=============/=============
 	// below: back-propagation
+
+
 
 
 
@@ -411,10 +415,15 @@ void fbward_gd(int k)
 
 
 
+
+
 	// above: back-propagation
 	//=============/=============/=============/=============/=============/=============/=============/=============
 	//=============/=============/=============/=============/=============/=============/=============/=============
-	// below: gradient descent
+	//=============/=============/=============/=============/=============/=============/=============/=============
+	//=============/=============/=============/=============/=============/=============/=============/=============
+	// below: gradient descent (with regularization)
+
 
 
 
@@ -433,6 +442,16 @@ void fbward_gd(int k)
 		dim3 threads(block_size, block_size);
 		dim3 grid( (dimension2+threads.x-1)/threads.x, (dimension1+threads.y-1)/threads.y );
 		kernel_cal_gd_matrix<32><<< grid, threads >>>(dimension1, dimension2, d_beta_cellfactor1, d_der_cellfactor1, rate_learn);
+
+
+
+		// TODO:
+		kernel_cal_matrix_gd_lasso
+		// for now, without group-lasso
+
+
+
+
 	}
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 
@@ -446,6 +465,10 @@ void fbward_gd(int k)
 		dim3 threads(block_size, block_size);
 		dim3 grid( (dimension2+threads.x-1)/threads.x, (dimension1+threads.y-1)/threads.y );
 		kernel_cal_gd_matrix<32><<< grid, threads >>>(dimension1, dimension2, d_beta_cellfactor2_sub, d_der_cellfactor2_sub, rate_learn);
+
+
+
+
 	}
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 

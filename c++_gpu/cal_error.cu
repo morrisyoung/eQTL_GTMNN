@@ -69,7 +69,7 @@ float cal_error()
 
 
 
-
+	/*
 	float error_total = 0;
 	for(int k=0; k<K; k++)
 	{
@@ -174,12 +174,21 @@ float cal_error()
 		//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 
 
+
+		// DEBUG
+		cout << k << ": " << error << endl;
+
 		error_total += error;
 	}
+	*/
 
+
+	// DEBUG
+	float error_total = 0;
 
 	return error_total;
 }
+
 
 
 

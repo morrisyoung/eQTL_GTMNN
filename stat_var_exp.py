@@ -12,6 +12,31 @@ if __name__ == "__main__":
 
 
 
+
+
+	## for real data, saved as .npy file
+	K = 28
+	Y = []
+	for k in range(K):
+		#data = np.load("./data_train/Tensor_tissue_" + str(k) + ".npy")
+		data = np.load("./data_test/Tensor_tissue_" + str(k) + ".npy")
+		data = data.tolist()
+		Y = Y + data
+	Y = np.array(Y)
+	print Y.shape
+	ave = np.mean(Y, axis=0)
+	error = np.sum(np.square(Y - ave))
+	print "error:", error
+	error = error / (len(Y) * len(Y[0]))
+	print "error ave:", error
+
+
+
+
+
+
+
+
 	"""
 	#''' for real data, saved as per tissue txt. file
 	K = 28				## NOTE: manually specify this
@@ -43,6 +68,7 @@ if __name__ == "__main__":
 	error = error / (len(Y) * len(Y[0]))
 	print error
 	"""
+
 
 
 
@@ -95,8 +121,12 @@ if __name__ == "__main__":
 
 
 
+
+	## above: real data
 	##=============/=============/=============/=============/=============/=============/=============/=============
 	##=============/=============/=============/=============/=============/=============/=============/=============
+	## below: simulated data
+
 
 
 
@@ -125,6 +155,7 @@ if __name__ == "__main__":
 
 
 
+	"""
 	## for simulated incomp tensor
 	K = 28
 	Y = []
@@ -137,7 +168,7 @@ if __name__ == "__main__":
 	ave = np.mean(Y, axis=0)
 	error = np.sum(np.square(Y - ave))
 	print "error:", error
-
+	"""
 
 
 

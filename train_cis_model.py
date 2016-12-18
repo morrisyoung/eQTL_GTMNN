@@ -43,7 +43,6 @@ I = 0						# num of SNPs
 J = 0						# num of genes
 K = 0						# num of tissues
 N = 0						# num of individuals
-D = 0						# num of cell factors
 
 
 
@@ -56,6 +55,7 @@ D = 0						# num of cell factors
 X = []						# matrix of Individuals x SNPs
 Y = []
 Y_pos = []
+mapping_cis = []			# list of (index start, index end)
 ##
 X_test = []						# matrix of Individuals x SNPs
 Y_test = []
@@ -64,16 +64,13 @@ Y_pos_test = []
 
 
 ## NOTE: the following have the intercept term
-beta_cellfactor1 = []		# matrix of first layer cell factor beta
-beta_cellfactor2 = []		# tensor (tissue specific) of second layer cell factor beta
+beta_cis = []				# tensor of (imcomplete) matrix of Genes x cis- SNPs
 # the following corresponds to the above
-der_cellfactor1 = []
-der_cellfactor2 = []
+der_cis = []
 
 
 #
 list_sample = []
-
 
 
 
@@ -95,9 +92,10 @@ list_sample = []
 ##==== forward/backward propogation, and gradient descent
 def forward_backward_gd():
 	global X, Y, Y_pos
-	global beta_cellfactor1, beta_cellfactor2
-	global der_cellfactor1, der_cellfactor2
-	global I, J, K, D, N
+	global mapping_cis
+	global beta_cis
+	global der_cis
+	global I, J, K, N
 
 	global rate_learn
 
@@ -112,9 +110,15 @@ def forward_backward_gd():
 	##==========================================================================================
 	## refill der containers, all with 0's (to make the GD more general)
 	##==========================================================================================
-	der_cellfactor1 = np.zeros(beta_cellfactor1.shape)
-	der_cellfactor2 = np.zeros(beta_cellfactor2.shape)
-
+	# make incomplete tensor numpy array at all levels, in order to supprt numpy array computing
+	der_cis = []
+	for k in range(K):
+		der_cis.append([])
+		for j in range(J):
+			temp = np.zeros(beta_cis[k][j].shape)
+			der_cis[k].append(temp)
+		der_cis[k] = np.array(der_cis[k])
+	der_cis = np.array(der_cis)
 
 
 
@@ -174,35 +178,40 @@ def forward_backward_gd():
 	##==========================================================================================
 	##=========##=========##=========##=========##=========##=========##=========##=========##==
 	##=============
-	## from cell factor (all tissues)
+	## from cis- (for all tissues this tissue contains)
 	##=============
-	# first layer
-	beta_cellfactor1_reshape = beta_cellfactor1.T 							# (I+1) x D
-	m_factor_before = np.dot(X, beta_cellfactor1_reshape)					# size_batch x D
-
-	# logistic twist
-	m_factor_after = 1.0 / (1.0+np.exp(-m_factor_before))
-
-	# second layer
-	array_ones = (np.array([np.ones(N)])).T
-	m_factor_new = np.concatenate((m_factor_after, array_ones), axis=1)		# size_batch x (D+1)
-	## tissue specific second layer
-	Y_cellfactor_batch = []
+	Y_cis_batch = []
 	for i in range(len(list_tissue_batch)):
 		k = list_tissue_batch[i]
+		#
 		size_batch = len(Y_pos_bacth[i])
 		#
-		Y_cellfactor = []
-		beta_cellfactor2_reshape = beta_cellfactor2[k].T 										# (D+1) x J
-		Y_cellfactor = np.dot(m_factor_new[Y_pos_bacth[i]], beta_cellfactor2_reshape)			# size_batch x J
-		Y_cellfactor_batch.append(Y_cellfactor)
-	Y_cellfactor_batch = np.array(Y_cellfactor_batch)
+		Y_cis = []
+		for j in range(J):
+			start = mapping_cis[j][0]
+			end = mapping_cis[j][1]
 
+			## for non-cis- and cis- genes
+			if (end - start + 1) == 0:
+				temp = np.zeros(size_batch) + beta_cis[k][j][0]
+				Y_cis.append(temp)
+			else:
+				X_sub = X[Y_pos_bacth[i], start:end+1]
+				array_ones = (np.array([np.ones(size_batch)])).T
+				X_sub = np.concatenate((X_sub, array_ones), axis=1)						# size_batch x (amount+1)
+				beta_sub = beta_cis[k][j]												# 1 x (amount+1)
+				Y_sub = np.dot(X_sub, beta_sub)											# 1 x size_batch
+				Y_cis.append(Y_sub)
+		Y_cis = np.array(Y_cis)															# J x size_batch
+		Y_cis = Y_cis.T 																# size_batch x J
+		#
+		Y_cis_batch.append(Y_cis)
+	Y_cis_batch = np.array(Y_cis_batch)
 
 	##=============
 	## compile and error cal
 	##=============
-	Y_final_batch = Y_cellfactor_batch
+	Y_final_batch = Y_cis_batch
 	Tensor_error_batch = Y_final_batch - Y_batch
 
 
@@ -215,31 +224,36 @@ def forward_backward_gd():
 	N_sample = len(list_sample_batch)			## total number of samples (in this batch)
 
 	##=============
-	## from cell factor (for all tissues involved)
+	## from cis- (for all tissues involved)
 	##=============
-	##== last layer
 	for i in range(len(list_tissue_batch)):
 		k = list_tissue_batch[i]
-		der_cellfactor2[k] = np.zeros(beta_cellfactor2[k].shape)			# J x (D+1)
-		m_factor_new_sub = m_factor_new[Y_pos_bacth[i]]
-		# J x N, N x (D+1)
-		der_cellfactor2[k] = np.dot(Tensor_error_batch[i].T, m_factor_new_sub)
-		der_cellfactor2[k] = der_cellfactor2[k] / N_sample
+		for j in range(J):
+			start = mapping_cis[j][0]
+			end = mapping_cis[j][1]
 
-	##== first layer
-	der_cellfactor1 = np.zeros(der_cellfactor1.shape)
-	m_factor_der = np.multiply(m_factor_after, 1 - m_factor_after)
-	for i in range(len(list_tissue_batch)):
-		k = list_tissue_batch[i]
-		# N x J, J x D --> N x D
-		m_temp = np.dot(Tensor_error_batch[i], beta_cellfactor2[k][:, :-1])
-		# N x D
-		#m_factor_der = np.multiply(m_factor_after, 1 - m_factor_after)
-		# N x D, N x D --> N x D
-		m_temp = np.multiply(m_temp, m_factor_der[Y_pos_bacth[i]])
-		# D x N, N x (I+1)
-		der_cellfactor1 += np.dot(m_temp.T, X[Y_pos_bacth[i]])				# NOTE: this is too large for GPU --> we do the m_temp first, and then do Beta part by part
-	der_cellfactor1 = der_cellfactor1 / N_sample
+			## for non-cis- and cis- genes
+			if (end - start + 1) == 0:
+				der_cis[k][j] = np.array([0])
+				continue
+
+			der_cis[k][j] = np.zeros(der_cis[k][j].shape)
+			#start = mapping_cis[j][0]
+			#end = mapping_cis[j][1]
+			X_sub = X[Y_pos_bacth[i]]
+			X_sub = X_sub[:, start:end+1]
+			array_ones = (np.array([np.ones(len(X_sub))])).T
+			X_sub = np.concatenate((X_sub, array_ones), axis=1)						# N x (amount+1)
+
+			## per individual fashion
+			#for n in range(N):
+			#	der_cis[k][j] += m_error[n][j] * X_sub[n]
+			'''
+			der_cis[k][j] = np.dot(m_error[:, j].T, X_sub)
+			der_cis[k][j] = der_cis[k][j] / N
+			'''
+			der_cis[k][j] = np.dot(Tensor_error_batch[i][:, j].T, X_sub)
+			der_cis[k][j] = der_cis[k][j] / N_sample
 
 
 
@@ -248,14 +262,12 @@ def forward_backward_gd():
 	## regularization
 	##==========================================================================================
 	##=========##=========##=========##=========##=========##=========##=========##=========##==
-	## especially for the beta_cellfactor1 and beta_cellfactor2
-	rate_lasso_beta_cellfactor1 = 1.0
-	sign = np.sign(beta_cellfactor1)
-	der_cellfactor1 += rate_lasso_beta_cellfactor1 * sign
 	#
-	rate_lasso_beta_cellfactor2 = 1.0
-	sign = np.sign(beta_cellfactor2)
-	der_cellfactor2 += rate_lasso_beta_cellfactor2 * sign
+	rate_lasso_beta_cis = 1.0
+	for i in range(len(beta_cis)):
+		for j in range(len(beta_cis[i])):
+			sign = np.sign(beta_cis[i][j])
+			der_cis[i][j] += rate_lasso_beta_cis * sign
 
 
 
@@ -264,10 +276,14 @@ def forward_backward_gd():
 	## gradient descent
 	##==========================================================================================
 	##=========##=========##=========##=========##=========##=========##=========##=========##==
-	beta_cellfactor1 = beta_cellfactor1 - rate_learn * der_cellfactor1
-	beta_cellfactor2 = beta_cellfactor2 - rate_learn * der_cellfactor2
+	beta_cis = beta_cis - rate_learn * der_cis
 
 	return
+
+
+
+
+
 
 
 
@@ -276,38 +292,39 @@ def forward_backward_gd():
 ##==== calculate the total squared error for all tissues
 def cal_error():
 	global X, Y, Y_pos
-	global beta_cellfactor1, beta_cellfactor2
-	global I, J, K, D, N
+	global mapping_cis
+	global beta_cis
+	global I, J, K, N
 
 	error_total = 0
 
-	##================================================================================================================
-	## cell factor first layer
-	# first layer
-	beta_cellfactor1_reshape = beta_cellfactor1.T 							# (I+1) x D
-	m_factor = np.dot(X, beta_cellfactor1_reshape)							# N x D
-	# logistic twist
-	m_factor = 1.0 / (1.0+np.exp(-m_factor))
-
-	# second layer input
-	array_ones = (np.array([np.ones(N)])).T
-	m_factor_new = np.concatenate((m_factor, array_ones), axis=1)			# N x (D+1)
-	##================================================================================================================
-
-
 	for k in range(K):
+		##=============
+		## from cis- (tissue k)
+		##=============
+		Y_cis = []
+		for j in range(J):
+			start = mapping_cis[j][0]
+			end = mapping_cis[j][1]
 
-		##=============
-		## from cell factor (tissue k)
-		##=============
-		Y_cellfactor = []
-		beta_cellfactor2_reshape = beta_cellfactor2[k].T 						# (D+1) x J
-		Y_cellfactor = np.dot(m_factor_new, beta_cellfactor2_reshape)			# N x J
+			## for non-cis- and cis- genes
+			if (end - start + 1) == 0:
+				temp = np.zeros(N) + beta_cis[k][j][0]
+				Y_cis.append(temp)
+			else:
+				X_sub = X[:, start:end+1]
+				array_ones = (np.array([np.ones(N)])).T
+				X_sub = np.concatenate((X_sub, array_ones), axis=1)						# N x (amount+1)
+				beta_sub = beta_cis[k][j]												# 1 x (amount+1)
+				Y_sub = np.dot(X_sub, beta_sub)											# 1 x N
+				Y_cis.append(Y_sub)
+		Y_cis = np.array(Y_cis)
+		Y_cis = Y_cis.T
 
 		##=============
 		## compile and error cal
 		##=============
-		Y_final = Y_cellfactor
+		Y_final = Y_cis
 		list_pos = Y_pos[k]
 		Y_final_sub = Y_final[list_pos]
 		error = np.sum(np.square(Y[k] - Y_final_sub))
@@ -325,8 +342,9 @@ def cal_error():
 
 def cal_error_test():
 	global X_test, Y_test, Y_pos_test
-	global beta_cellfactor1, beta_cellfactor2
-	global I, J, K, D
+	global mapping_cis
+	global beta_cis
+	global I, J, K
 
 
 	## make this N local
@@ -338,33 +356,34 @@ def cal_error_test():
 
 	error_total = 0
 
-	##================================================================================================================
-	## cell factor first layer
-	# first layer
-	beta_cellfactor1_reshape = beta_cellfactor1.T 							# (I+1) x D
-	m_factor = np.dot(X, beta_cellfactor1_reshape)							# N x D
-	# logistic twist
-	m_factor = 1.0 / (1.0+np.exp(-m_factor))
-
-	# second layer input
-	array_ones = (np.array([np.ones(N)])).T
-	m_factor_new = np.concatenate((m_factor, array_ones), axis=1)			# N x (D+1)
-	##================================================================================================================
-
 
 	for k in range(K):
+		##=============
+		## from cis- (tissue k)
+		##=============
+		Y_cis = []
+		for j in range(J):
+			start = mapping_cis[j][0]
+			end = mapping_cis[j][1]
 
-		##=============
-		## from cell factor (tissue k)
-		##=============
-		Y_cellfactor = []
-		beta_cellfactor2_reshape = beta_cellfactor2[k].T 						# (D+1) x J
-		Y_cellfactor = np.dot(m_factor_new, beta_cellfactor2_reshape)			# N x J
+			## for non-cis- and cis- genes
+			if (end - start + 1) == 0:
+				temp = np.zeros(N) + beta_cis[k][j][0]
+				Y_cis.append(temp)
+			else:
+				X_sub = X[:, start:end+1]
+				array_ones = (np.array([np.ones(N)])).T
+				X_sub = np.concatenate((X_sub, array_ones), axis=1)						# N x (amount+1)
+				beta_sub = beta_cis[k][j]												# 1 x (amount+1)
+				Y_sub = np.dot(X_sub, beta_sub)											# 1 x N
+				Y_cis.append(Y_sub)
+		Y_cis = np.array(Y_cis)
+		Y_cis = Y_cis.T
 
 		##=============
 		## compile and error cal
 		##=============
-		Y_final = Y_cellfactor
+		Y_final = Y_cis
 		list_pos = Y_pos[k]
 		Y_final_sub = Y_final[list_pos]
 		error = np.sum(np.square(Y[k] - Y_final_sub))
@@ -413,8 +432,8 @@ if __name__ == "__main__":
 	##========================================================================
 	##==== load data
 	##
-	fileheader = "../workbench1/data_simu_data/"
-	#fileheader = "../preprocess/data_train/"
+	#fileheader = "../workbench1/data_simu_data/"
+	fileheader = "../preprocess/data_train/"
 
 	#
 	X = np.load(fileheader + "X.npy")
@@ -429,23 +448,29 @@ if __name__ == "__main__":
 		Y_pos.append(list_pos)
 	Y = np.array(Y)
 	Y_pos = np.array(Y_pos)
+	mapping_cis = np.load(fileheader + "mapping_cis.npy")
 
 	##
-	fileheader = "../workbench1/data_simu_init/"
-	#fileheader = "../preprocess/data_real_init/"
+	#fileheader = "../workbench1/data_simu_init/"
+	fileheader = "../preprocess/data_real_init/"
 	#
-	beta_cellfactor1 = np.load(fileheader + "beta_cellfactor1.npy")
-	beta_cellfactor2 = np.load(fileheader + "beta_cellfactor2.npy")
+	beta_cellfactor1 = np.load(fileheader + "beta_cis.npy")
+
 	##==== fill dimension
 	I = len(X[0])
 	J = len(Y[0][0])
 	K = len(Y)
 	N = len(X)
-	D = len(beta_cellfactor1)
 
-	#
-	der_cellfactor1 = np.zeros(beta_cellfactor1.shape)
-	der_cellfactor2 = np.zeros(beta_cellfactor2.shape)
+	# make incomplete tensor numpy array at all levels, in order to supprt numpy array computing
+	der_cis = []
+	for k in range(K):
+		der_cis.append([])
+		for j in range(J):
+			temp = np.zeros(beta_cis[k][j].shape)
+			der_cis[k].append(temp)
+		der_cis[k] = np.array(der_cis[k])
+	der_cis = np.array(der_cis)
 
 	##==== append intercept to X, and Z (for convenience of cell factor pathway, and batch pathway)
 	## X
@@ -519,9 +544,6 @@ if __name__ == "__main__":
 
 
 
-
-
-
 	##=========================================
 	## prepare for the stochastic sample pool
 	##=========================================
@@ -534,8 +556,6 @@ if __name__ == "__main__":
 			sample = str(k) + "-" + str(n)
 			list_sample.append(sample)
 	list_sample = np.array(list_sample)
-
-
 
 
 
@@ -601,11 +621,9 @@ if __name__ == "__main__":
 		##==== save results per need
 		if iter1 % 5 == 0:
 			start_time = timeit.default_timer()
-			np.save("./result/beta_cellfactor1", beta_cellfactor1)
-			np.save("./result/beta_cellfactor2", beta_cellfactor2)
+			np.save("./result/beta_cis", beta_cis)
 			elapsed = timeit.default_timer() - start_time
 			print "time spent on saving the data:", elapsed
-
 
 
 	print "done!"
@@ -613,9 +631,10 @@ if __name__ == "__main__":
 	print "speed:", (timeit.default_timer() - start_time_total) / num_iter
 
 	##==== save the model
-	np.save("./result/beta_cellfactor1", beta_cellfactor1)
-	np.save("./result/beta_cellfactor2", beta_cellfactor2)
+	np.save("./result/beta_cis", beta_cis)
 	print "now it's done..."
+
+
 
 
 

@@ -44,15 +44,15 @@ if __name__ == "__main__":
 
 
 	##====
-	''' plot the factor matrix
+	#''' plot the factor matrix
 	k = 0																## TODO: change this
 	beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
 	print np.amax(beta_cellfactor2_sub)
 	print np.amin(beta_cellfactor2_sub)
 
-
-	for d in range(len(beta_cellfactor2_sub)):
-		beta_cellfactor2_sub[d] = np.sort(beta_cellfactor2_sub[d])
+	## sorting
+	#for d in range(len(beta_cellfactor2_sub)):
+	#	beta_cellfactor2_sub[d] = np.sort(beta_cellfactor2_sub[d])
 	#plt.plot(beta, 'ro')
 	#plt.show()
 
@@ -75,14 +75,14 @@ if __name__ == "__main__":
 	#fig.savefig("plot/quantile_c22_gene.jpg")
 	fig.savefig("/Users/shuoyang/Desktop/fm.jpg")
 	#fig.savefig("/Users/shuoyang/Desktop/fm_heatmap.jpg")
-	'''
+	#'''
 
 
 
 
 
 
-
+	''' per factor sorted genes
 	k = 0																## TODO: change this
 	beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
 	print np.amax(beta_cellfactor2_sub)
@@ -108,6 +108,7 @@ if __name__ == "__main__":
 		plt.savefig("/Users/shuoyang/Desktop/figs_genebetasort_k" + str(k) + "/d" + str(d) + ".png")
 		#plt.show()
 		plt.close(fig)
+	'''
 
 
 
@@ -163,6 +164,7 @@ if __name__ == "__main__":
 		#plt.show()
 		plt.close(fig)
 	'''
+
 
 
 

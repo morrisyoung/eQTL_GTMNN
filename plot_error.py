@@ -54,28 +54,33 @@ if __name__=="__main__":
 
 
 	## NOTE: plot double legend
-	x = np.arange(0, 201, 1)
+	#x = np.arange(0, 201, 1)
 	y1 = np.load("./result/list_error.npy")
 	y2 = np.load("./result/list_error_test.npy")
 	x = np.arange(0, len(y1), 1)
 
 	fig, ax1 = plt.subplots()
 
-	ax2 = ax1.twinx()
-	ax1.plot(x, y1, 'b-', label="Training")
-	ax2.plot(x, y2, 'g-', label="Testing")
+	#ax2 = ax1.twinx()
+
+	## scale to variance portion
+	y1 = 1 - y1 / 82944750.0					# amount: (4270, 19425)
+	y2 = 1 - y2 / 26776502.0985					# amount: (1424, 19425)
+
+	ax1.plot(x, y1, 'b-')
+	ax1.plot(x, y2, 'g-')
+	#ax2.plot(x, y2, 'g-', label="Testing")
 
 	ax1.set_xlabel('# of updates')
-	ax1.set_ylabel('training total squared error', color='b')
-	ax2.set_ylabel('testing total squared error', color='g')
+	ax1.set_ylabel('variance explained')
+	#x2.set_ylabel('testing total squared error', color='g')
 
+	blue_line = mlines.Line2D([], [], color='b', markersize=15, label='training set')
+	red_line = mlines.Line2D([], [], color='g', markersize=15, label='testing set')
+	plt.legend(handles=[blue_line, red_line], loc = 4)
 
-	blue_line = mlines.Line2D([], [], color='b', markersize=15, label='Training')
-	red_line = mlines.Line2D([], [], color='g', markersize=15, label='Testing')
-	plt.legend(handles=[blue_line, red_line])
-
-
-	plt.title("training and testing error with updates")
+	plt.grid(True)
+	plt.title("variance explained by the model v.s. learning updates")
 	plt.show()
 
 

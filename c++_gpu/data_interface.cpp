@@ -331,17 +331,55 @@ void data_load_real()
 
 
 
+
+	// //==== matrix
+	// //== beta_cellfactor1
+	// sprintf(filename, "../../preprocess/data_real_init/beta_cellfactor1.txt");
+	// load_matrix(beta_cellfactor1, filename);
+	// cout << "@@@" << endl;
+
+	// //==== tensor
+	// //== beta_cellfactor2
+	// sprintf(filename, "../../preprocess/data_real_init/beta_cellfactor2.txt");
+	// load_tensor(beta_cellfactor2, filename);
+	// cout << "@@@" << endl;
+	//=====================================
+	//==== new binary data loading module
+	//=====================================
 	//==== matrix
 	//== beta_cellfactor1
-	sprintf(filename, "../../preprocess/data_real_init/beta_cellfactor1.txt");
-	load_matrix(beta_cellfactor1, filename);
-	cout << "@@@" << endl;
+	{
+		int dimension1;
+		int dimension2;
+		ifstream infile("../../preprocess/data_real_init/beta_cellfactor1.m.dat", ios::binary | ios::in);
+		infile.read((char *)&dimension1, sizeof(dimension1));
+		infile.read((char *)&dimension2, sizeof(dimension2));
+		//
+		beta_cellfactor1.init(dimension1, dimension2);
+		float * pointer = beta_cellfactor1.get_pointer();
+		infile.read((char *)pointer, (dimension1*dimension2)*sizeof(float));
+		//
+		infile.close();
+	}
 
 	//==== tensor
 	//== beta_cellfactor2
-	sprintf(filename, "../../preprocess/data_real_init/beta_cellfactor2.txt");
-	load_tensor(beta_cellfactor2, filename);
-	cout << "@@@" << endl;
+	{
+		int dimension1;
+		int dimension2;
+		int dimension3;
+		ifstream infile("../../preprocess/data_real_init/beta_cellfactor2.t.dat", ios::binary | ios::in);
+		infile.read((char *)&dimension1, sizeof(dimension1));
+		infile.read((char *)&dimension2, sizeof(dimension2));
+		infile.read((char *)&dimension3, sizeof(dimension3));
+		//
+		beta_cellfactor2.init(dimension1, dimension2, dimension3);
+		float * pointer = beta_cellfactor2.get_tensor();
+		infile.read((char *)pointer, (dimension1*dimension2*dimension3)*sizeof(float));
+		//
+		infile.close();
+	}
+
 
 
 
@@ -529,9 +567,26 @@ void data_load_real()
 		//==========================================
 		//==== load data
 		//== X
-		sprintf(filename, "../../preprocess/data_train/X.txt");
-		load_matrix(X, filename);
-		cout << "@@@" << endl;
+		// sprintf(filename, "../../preprocess/data_train/X.txt");
+		// load_matrix(X, filename);
+		// cout << "@@@" << endl;
+		//=====================================
+		//==== new binary data loading module
+		//=====================================
+		{
+			int dimension1;
+			int dimension2;
+			ifstream infile("../../preprocess/data_train/X.m.dat", ios::binary | ios::in);
+			infile.read((char *)&dimension1, sizeof(dimension1));
+			infile.read((char *)&dimension2, sizeof(dimension2));
+			//
+			X.init(dimension1, dimension2);
+			float * pointer = X.get_pointer();
+			infile.read((char *)pointer, (dimension1*dimension2)*sizeof(float));
+			//
+			infile.close();
+		}
+
 		//==========================================
 		//==== append intercept to X, and Z (for convenience of cell factor pathway, and batch pathway)
 		X.append_column_one();									// N x (I+1)

@@ -93,13 +93,14 @@ void cal_gpu_lmm()
 		}
 
 
-		cout << start << endl;
+		// DEBUG
+		// cout << start << endl;
 
 
 		// DEBUG
-		struct timeval time_start;
-		struct timeval time_end;
-		double time_diff;
+		// struct timeval time_start;
+		// struct timeval time_end;
+		// double time_diff;
 
 
 
@@ -131,8 +132,8 @@ void cal_gpu_lmm()
 		float * d_beta_sub;
 		checkCudaErrors(cudaMalloc((void **) &d_beta_sub, (D*dimension2)*sizeof(float)));
 
-		//==== timer starts
-		gettimeofday(&time_start, NULL);
+		// //==== timer starts
+		// gettimeofday(&time_start, NULL);
 
 		//==== beta_sub and d_beta_sub
 		// to beta_sub
@@ -149,45 +150,45 @@ void cal_gpu_lmm()
 			memcpy( (beta_sub+pos_new_start), (beta_pointer+pos_ref_start), dimension2*sizeof(float) );
 		}
 
-		//==== timer ends
-		gettimeofday(&time_end, NULL);
-		time_diff = (double)(time_end.tv_sec-time_start.tv_sec) + (double)(time_end.tv_usec-time_start.tv_usec)/1000000;
-		printf("time used is %f seconds.\n", time_diff);
-		cout << "####" << endl;
+		// //==== timer ends
+		// gettimeofday(&time_end, NULL);
+		// time_diff = (double)(time_end.tv_sec-time_start.tv_sec) + (double)(time_end.tv_usec-time_start.tv_usec)/1000000;
+		// printf("time used is %f seconds.\n", time_diff);
+		// cout << "####" << endl;
 
 		// to d_beta_sub
 		{
-			//==== timing
-		    // Allocate CUDA events that we'll use for timing
-		    cudaEvent_t start;
-		    cudaEventCreate(&start);
-		    cudaEvent_t stop;
-		    cudaEventCreate(&stop);
-		    // Record the start event
-		    cudaEventRecord(start, NULL);
+			// //==== timing
+		 //    // Allocate CUDA events that we'll use for timing
+		 //    cudaEvent_t start;
+		 //    cudaEventCreate(&start);
+		 //    cudaEvent_t stop;
+		 //    cudaEventCreate(&stop);
+		 //    // Record the start event
+		 //    cudaEventRecord(start, NULL);
 
 			checkCudaErrors(cudaMemcpy(d_beta_sub, beta_sub, (D*dimension2)*sizeof(float), cudaMemcpyHostToDevice));
 
-			//==== timing
-		    // Record the stop event
-		    cudaEventRecord(stop, NULL);
-		    // Wait for the stop event to complete
-		    cudaEventSynchronize(stop);
-		    float msecTotal = 0.0f;
-		    cudaEventElapsedTime(&msecTotal, start, stop);
-		    printf("Time= %.3f msec\n", msecTotal);
+			// //==== timing
+		 //    // Record the stop event
+		 //    cudaEventRecord(stop, NULL);
+		 //    // Wait for the stop event to complete
+		 //    cudaEventSynchronize(stop);
+		 //    float msecTotal = 0.0f;
+		 //    cudaEventElapsedTime(&msecTotal, start, stop);
+		 //    printf("Time= %.3f msec\n", msecTotal);
 		}
 
 		// to d_beta_sub_reshape
 		{
-			//==== timing
-		    // Allocate CUDA events that we'll use for timing
-		    cudaEvent_t start;
-		    cudaEventCreate(&start);
-		    cudaEvent_t stop;
-		    cudaEventCreate(&stop);
-		    // Record the start event
-		    cudaEventRecord(start, NULL);
+			// //==== timing
+		 //    // Allocate CUDA events that we'll use for timing
+		 //    cudaEvent_t start;
+		 //    cudaEventCreate(&start);
+		 //    cudaEvent_t stop;
+		 //    cudaEventCreate(&stop);
+		 //    // Record the start event
+		 //    cudaEventRecord(start, NULL);
 
 		    //
 			int block_size = 32;
@@ -195,14 +196,14 @@ void cal_gpu_lmm()
 			dim3 grid( (dimension2+threads.x-1)/threads.x, (D+threads.y-1)/threads.y );
 			kernel_op_matrix_reshape<32><<< grid, threads >>>(D, dimension2, d_beta_sub, d_beta_sub_reshape);
 
-			//==== timing
-		    // Record the stop event
-		    cudaEventRecord(stop, NULL);
-		    // Wait for the stop event to complete
-		    cudaEventSynchronize(stop);
-		    float msecTotal = 0.0f;
-		    cudaEventElapsedTime(&msecTotal, start, stop);
-		    printf("Time= %.3f msec\n", msecTotal);
+			// //==== timing
+		 //    // Record the stop event
+		 //    cudaEventRecord(stop, NULL);
+		 //    // Wait for the stop event to complete
+		 //    cudaEventSynchronize(stop);
+		 //    float msecTotal = 0.0f;
+		 //    cudaEventElapsedTime(&msecTotal, start, stop);
+		 //    printf("Time= %.3f msec\n", msecTotal);
 		}
 
 		// rm temp
@@ -241,8 +242,8 @@ void cal_gpu_lmm()
 		float * d_X_sub;
 		checkCudaErrors(cudaMalloc((void **) &d_X_sub, (N*dimension2)*sizeof(float)));
 
-		//==== timer starts
-		gettimeofday(&time_start, NULL);
+		// //==== timer starts
+		// gettimeofday(&time_start, NULL);
 
 		//==== X_sub and d_X_sub
 		float * X_pointer = X.get_pointer();
@@ -258,33 +259,33 @@ void cal_gpu_lmm()
 			memcpy( (X_sub+pos_new_start), (X_pointer+pos_ref_start), dimension2*sizeof(float) );
 		}
 
-		//==== timer ends
-		gettimeofday(&time_end, NULL);
-		time_diff = (double)(time_end.tv_sec-time_start.tv_sec) + (double)(time_end.tv_usec-time_start.tv_usec)/1000000;
-		printf("time used is %f seconds.\n", time_diff);
-		cout << "####" << endl;
+		// //==== timer ends
+		// gettimeofday(&time_end, NULL);
+		// time_diff = (double)(time_end.tv_sec-time_start.tv_sec) + (double)(time_end.tv_usec-time_start.tv_usec)/1000000;
+		// printf("time used is %f seconds.\n", time_diff);
+		// cout << "####" << endl;
 
 		// to d_X_sub
 		{
-			//==== timing
-		    // Allocate CUDA events that we'll use for timing
-		    cudaEvent_t start;
-		    cudaEventCreate(&start);
-		    cudaEvent_t stop;
-		    cudaEventCreate(&stop);
-		    // Record the start event
-		    cudaEventRecord(start, NULL);
+			// //==== timing
+		 //    // Allocate CUDA events that we'll use for timing
+		 //    cudaEvent_t start;
+		 //    cudaEventCreate(&start);
+		 //    cudaEvent_t stop;
+		 //    cudaEventCreate(&stop);
+		 //    // Record the start event
+		 //    cudaEventRecord(start, NULL);
 
 			checkCudaErrors(cudaMemcpy(d_X_sub, X_sub, (N*dimension2)*sizeof(float), cudaMemcpyHostToDevice));
 
-			//==== timing
-		    // Record the stop event
-		    cudaEventRecord(stop, NULL);
-		    // Wait for the stop event to complete
-		    cudaEventSynchronize(stop);
-		    float msecTotal = 0.0f;
-		    cudaEventElapsedTime(&msecTotal, start, stop);
-		    printf("Time= %.3f msec\n", msecTotal);
+			// //==== timing
+		 //    // Record the stop event
+		 //    cudaEventRecord(stop, NULL);
+		 //    // Wait for the stop event to complete
+		 //    cudaEventSynchronize(stop);
+		 //    float msecTotal = 0.0f;
+		 //    cudaEventElapsedTime(&msecTotal, start, stop);
+		 //    printf("Time= %.3f msec\n", msecTotal);
 		}
 
 
@@ -308,14 +309,14 @@ void cal_gpu_lmm()
 		//
 		if(start == 0)
 		{
-			//==== timing
-			// Allocate CUDA events that we'll use for timing
-			cudaEvent_t start;
-			cudaEventCreate(&start);
-			cudaEvent_t stop;
-			cudaEventCreate(&stop);
-			// Record the start event
-			cudaEventRecord(start, NULL);
+			// //==== timing
+			// // Allocate CUDA events that we'll use for timing
+			// cudaEvent_t start;
+			// cudaEventCreate(&start);
+			// cudaEvent_t stop;
+			// cudaEventCreate(&stop);
+			// // Record the start event
+			// cudaEventRecord(start, NULL);
 
 			//
 			const float alpha = 1.0f;
@@ -328,25 +329,25 @@ void cal_gpu_lmm()
 			checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, D, N, dimension2, &alpha, d_beta_sub_reshape, D, d_X_sub, dimension2, &beta, d_cellfactor, D));
 			checkCudaErrors(cublasDestroy(handle));
 
-			//==== timing
-			// Record the stop event
-			cudaEventRecord(stop, NULL);
-			// Wait for the stop event to complete
-			cudaEventSynchronize(stop);
-			float msecTotal = 0.0f;
-			cudaEventElapsedTime(&msecTotal, start, stop);
-			printf("Time= %.3f msec\n", msecTotal);	
+			// //==== timing
+			// // Record the stop event
+			// cudaEventRecord(stop, NULL);
+			// // Wait for the stop event to complete
+			// cudaEventSynchronize(stop);
+			// float msecTotal = 0.0f;
+			// cudaEventElapsedTime(&msecTotal, start, stop);
+			// printf("Time= %.3f msec\n", msecTotal);
 		}
 		else
 		{
-			//==== timing
-			// Allocate CUDA events that we'll use for timing
-			cudaEvent_t start;
-			cudaEventCreate(&start);
-			cudaEvent_t stop;
-			cudaEventCreate(&stop);
-			// Record the start event
-			cudaEventRecord(start, NULL);
+			// //==== timing
+			// // Allocate CUDA events that we'll use for timing
+			// cudaEvent_t start;
+			// cudaEventCreate(&start);
+			// cudaEvent_t stop;
+			// cudaEventCreate(&stop);
+			// // Record the start event
+			// cudaEventRecord(start, NULL);
 
 			//
 			const float alpha = 1.0f;
@@ -359,14 +360,14 @@ void cal_gpu_lmm()
 			checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, D, N, dimension2, &alpha, d_beta_sub_reshape, D, d_X_sub, dimension2, &beta, d_cellfactor, D));
 			checkCudaErrors(cublasDestroy(handle));
 
-			//==== timing
-			// Record the stop event
-			cudaEventRecord(stop, NULL);
-			// Wait for the stop event to complete
-			cudaEventSynchronize(stop);
-			float msecTotal = 0.0f;
-			cudaEventElapsedTime(&msecTotal, start, stop);
-			printf("Time= %.3f msec\n", msecTotal);	
+			// //==== timing
+			// // Record the stop event
+			// cudaEventRecord(stop, NULL);
+			// // Wait for the stop event to complete
+			// cudaEventSynchronize(stop);
+			// float msecTotal = 0.0f;
+			// cudaEventElapsedTime(&msecTotal, start, stop);
+			// printf("Time= %.3f msec\n", msecTotal);
 		}
 
 			// //==== timing
@@ -416,14 +417,14 @@ void cal_gpu_lmm()
 	// logistic twist: d_cellfactor
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 	{
-		//==== timing
-	    // Allocate CUDA events that we'll use for timing
-	    cudaEvent_t start;
-	    cudaEventCreate(&start);
-	    cudaEvent_t stop;
-	    cudaEventCreate(&stop);
-	    // Record the start event
-	    cudaEventRecord(start, NULL);
+		// //==== timing
+	 //    // Allocate CUDA events that we'll use for timing
+	 //    cudaEvent_t start;
+	 //    cudaEventCreate(&start);
+	 //    cudaEvent_t stop;
+	 //    cudaEventCreate(&stop);
+	 //    // Record the start event
+	 //    cudaEventRecord(start, NULL);
 
 		//
 		int block_size = 32;
@@ -431,27 +432,27 @@ void cal_gpu_lmm()
 		dim3 grid( (D+threads.x-1)/threads.x, (N+threads.y-1)/threads.y );
 		kernel_cal_matrix_logistic<32><<< grid, threads >>>(N, D, d_cellfactor);
 
-		//==== timing
-	    // Record the stop event
-	    cudaEventRecord(stop, NULL);
-	    // Wait for the stop event to complete
-	    cudaEventSynchronize(stop);
-	    float msecTotal = 0.0f;
-	    cudaEventElapsedTime(&msecTotal, start, stop);
-	    printf("Time= %.3f msec\n", msecTotal);
+		// //==== timing
+	 //    // Record the stop event
+	 //    cudaEventRecord(stop, NULL);
+	 //    // Wait for the stop event to complete
+	 //    cudaEventSynchronize(stop);
+	 //    float msecTotal = 0.0f;
+	 //    cudaEventElapsedTime(&msecTotal, start, stop);
+	 //    printf("Time= %.3f msec\n", msecTotal);
 	}
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 	{
-		//==== timing
-	    // Allocate CUDA events that we'll use for timing
-	    cudaEvent_t start;
-	    cudaEventCreate(&start);
-	    cudaEvent_t stop;
-	    cudaEventCreate(&stop);
-	    // Record the start event
-	    cudaEventRecord(start, NULL);
+		// //==== timing
+	 //    // Allocate CUDA events that we'll use for timing
+	 //    cudaEvent_t start;
+	 //    cudaEventCreate(&start);
+	 //    cudaEvent_t stop;
+	 //    cudaEventCreate(&stop);
+	 //    // Record the start event
+	 //    cudaEventRecord(start, NULL);
 
 	    //
 		int block_size = 32;
@@ -459,14 +460,14 @@ void cal_gpu_lmm()
 		dim3 grid( ((D+1)+threads.x-1)/threads.x, (N+threads.y-1)/threads.y );
 		kernel_op_matrix_extendone<32><<< grid, threads >>>(N, D+1, d_cellfactor_new, d_cellfactor);
 
-		//==== timing
-	    // Record the stop event
-	    cudaEventRecord(stop, NULL);
-	    // Wait for the stop event to complete
-	    cudaEventSynchronize(stop);
-	    float msecTotal = 0.0f;
-	    cudaEventElapsedTime(&msecTotal, start, stop);
-	    printf("Time= %.3f msec\n", msecTotal);	
+		// //==== timing
+	 //    // Record the stop event
+	 //    cudaEventRecord(stop, NULL);
+	 //    // Wait for the stop event to complete
+	 //    cudaEventSynchronize(stop);
+	 //    float msecTotal = 0.0f;
+	 //    cudaEventElapsedTime(&msecTotal, start, stop);
+	 //    printf("Time= %.3f msec\n", msecTotal);
 	}
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 

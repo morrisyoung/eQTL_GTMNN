@@ -324,6 +324,15 @@ public:
 		return;
 	}
 
+	void init(long int length1, long int length2, long int length3)
+	{
+		dimension1 = length1;
+		dimension2 = length2;
+		dimension3 = length3;
+		tensor = (float *)calloc( dimension1 * dimension2 * dimension3, sizeof(float) );
+		return;
+	}
+
 
 	long int get_dimension1()
 	{

@@ -144,6 +144,8 @@ if __name__ == "__main__":
 	init_beta_cis = np.array(init_beta_cis)
 
 
+
+
 	##============
 	Y_cis = Y
 	for j in range(J):
@@ -161,7 +163,10 @@ if __name__ == "__main__":
 		try:
 			for k in range(K):
 				#get the X_sub for the avaliable samples for this tissue
-				X_sub = X[Y_pos[k]][start:end+1]
+				## NOTE: the following is wrong indexing
+				#X_sub = X[Y_pos[k]][start:end+1]
+				X_sub = X[Y_pos[k]]
+				X_sub = X_sub[:, start:end+1]
 				array_ones = (np.array([np.ones(len(X_sub))])).T
 				X_sub = np.concatenate((X_sub, array_ones), axis=1)					# N x (amount+1)
 
@@ -171,6 +176,9 @@ if __name__ == "__main__":
 				init_beta_cis[k][j] = init_beta_sub
 		except:
 			print "LinAlgError: gene#", j
+
+
+
 
 
 	init_beta_cis = np.array(init_beta_cis)

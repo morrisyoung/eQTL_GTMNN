@@ -237,10 +237,29 @@ EXECUTABLE=	main
 # Target rules
 all: build clean mv
 
+
+filefmt: main_filefmt clean mv
+
+
+
+
+
+
+
+## file formater
+main_filefmt.o: main_filefmt.cpp
+	$(HOST_COMPILER) -c $*.cpp $(OPT)
+
+main_filefmt: main_filefmt.o
+	$(HOST_COMPILER) -o main_filefmt main_filefmt.o $(OPT) $(LIBS)
+
+
+
+
+
+
+
 build: main
-
-
-
 
 
 #$(OBJS_GPU):$(SRCS_GPU)
@@ -254,13 +273,14 @@ main:$(OBJS_GPU)
 	$(HOST_COMPILER) -o $(EXECUTABLE) $(ALL_LDFLAGS) $(GOPT) $(GLIBS) -L/nfs/apps/cuda/7.5.18/lib64 -lcuda -lcudart $(SRCS) $(OBJS_GPU) $(LIBRARIES)
 
 
-
-
-
 clean:
 	rm -f *.o
 
 mv:
 	@chmod 755 $(EXECUTABLE)
+
+
+
+
 
 

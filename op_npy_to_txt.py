@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
 
 
-
+	''' for real data
 	##==== beta_cellfactor1, beta_cellfactor2
 	beta_cellfactor1 = np.load("./data_real_init/beta_cellfactor1.npy")
 	reformat_matrix(beta_cellfactor1, "./data_real_init/beta_cellfactor1.txt")
@@ -91,6 +91,19 @@ if __name__ == "__main__":
 					file.write(str(expr))
 			file.write('\n')
 		file.close()
+	'''
+
+
+
+
+	##==== beta_cellfactor1, beta_cellfactor2
+	beta_cellfactor1 = np.load("./data_simu_init/beta_cellfactor1.npy")
+	reformat_matrix(beta_cellfactor1, "./data_simu_init/beta_cellfactor1.txt")
+	print beta_cellfactor1[0][0], beta_cellfactor1[0][1], beta_cellfactor1[1][0]
+
+
+
+
 
 
 

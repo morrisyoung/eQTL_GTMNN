@@ -276,7 +276,8 @@ if __name__ == "__main__":
 	np.save("./data_simu_init/beta_cellfactor1", beta_cellfactor1)
 	np.save("./data_simu_init/beta_cellfactor2", beta_cellfactor2)
 
-	#reformat_matrix(beta_cellfactor1, "./data_simu_init/beta_cellfactor1.txt")
+	reformat_matrix(beta_cellfactor1, "./data_simu_init/beta_cellfactor1.txt")
+
 
 
 

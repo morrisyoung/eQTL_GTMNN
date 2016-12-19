@@ -620,63 +620,100 @@ void data_load_real()
 		{
 			cout << "loading incomplete Y tensor..." << endl;
 
-			//@@
-			vector<vector<vector<float>>> vec_tensor_expr;
-			vector<vector<int>> vec_indiv_pos_list;
 
+			// //@@
+			// vector<vector<vector<float>>> vec_tensor_expr;
+			// vector<vector<int>> vec_indiv_pos_list;
+
+			// for(int k=0; k<K; k++)
+			// {
+			// 	cout << "tissue#" << k << endl;
+			// 	//@@
+			// 	vector<vector<float>> vec0;
+			// 	vec_tensor_expr.push_back(vec0);
+			// 	vector<int> vec1;
+			// 	vec_indiv_pos_list.push_back(vec1);
+
+			// 	char filename[100];
+			// 	filename[0] = '\0';
+			// 	strcat(filename, "../../preprocess/data_train/Tensor_tissue_");
+			// 	char tissue[10];
+			// 	sprintf(tissue, "%d", k);
+			// 	strcat(filename, tissue);
+			// 	strcat(filename, ".txt");
+
+			// 	char type[10] = "r";
+			// 	filehandle file(filename, type);
+
+			// 	long input_length = 1000000000;
+			// 	char * line = (char *)malloc( sizeof(char) * input_length );
+			// 	while(1)
+			// 	{
+			// 		int end = file.readline(line, input_length);
+			// 		if(end)
+			// 			break;
+
+			// 		line_class line_obj(line);
+			// 		line_obj.split_tab();
+
+			// 		int index = atoi(line_obj.at(0));
+			// 		//@@
+			// 		(vec_indiv_pos_list.at(k)).push_back(index);
+
+			// 		vector<float> vec;
+			// 		for(unsigned i=1; i<line_obj.size(); i++)		// NOTE: here we start from pos#1
+			// 		{
+			// 			char * pointer = line_obj.at(i);
+			// 			//float value = stof(pointer);				// NOTE: there are double-range numbers
+			// 			float value = stod(pointer);
+			// 			vec.push_back(value);
+			// 		}
+			// 		line_obj.release();
+
+			// 		//@@
+			// 		(vec_tensor_expr.at(k)).push_back(vec);
+			// 	}
+			// 	free(line);
+			// 	file.close();
+			// }
+			// //
+			// Y.init_incomp(vec_tensor_expr, vec_indiv_pos_list);
+			/////////
+			//=====================================
+			//==== new binary data loading module
+			//=====================================
 			for(int k=0; k<K; k++)
 			{
-				cout << "tissue#" << k << endl;
-				//@@
-				vector<vector<float>> vec0;
-				vec_tensor_expr.push_back(vec0);
-				vector<int> vec1;
-				vec_indiv_pos_list.push_back(vec1);
-
+				int dimension1;
+				int dimension2;
+				int * pointer_indiv;
+				float * pointer_data;
+				//
 				char filename[100];
 				filename[0] = '\0';
 				strcat(filename, "../../preprocess/data_train/Tensor_tissue_");
 				char tissue[10];
 				sprintf(tissue, "%d", k);
 				strcat(filename, tissue);
-				strcat(filename, ".txt");
+				strcat(filename, ".lm.bat");
+				ifstream infile(filename, ios::binary | ios::in);
+				//
+				infile.read((char *)&dimension1, sizeof(dimension1));
+				infile.read((char *)&dimension2, sizeof(dimension2));
+				//
+				pointer_indiv = (int *)calloc( dimension1, sizeof(int) );
+				pointer_data = (float *)calloc( dimension1*dimension2, sizeof(float) );
+				//
+				infile.read((char *)pointer_indiv, dimension1*sizeof(int));
+				infile.read((char *)pointer_data, (dimension1*dimension2)*sizeof(float));
+				//
+				infile.close();
 
-				char type[10] = "r";
-				filehandle file(filename, type);
-
-				long input_length = 1000000000;
-				char * line = (char *)malloc( sizeof(char) * input_length );
-				while(1)
-				{
-					int end = file.readline(line, input_length);
-					if(end)
-						break;
-
-					line_class line_obj(line);
-					line_obj.split_tab();
-
-					int index = atoi(line_obj.at(0));
-					//@@
-					(vec_indiv_pos_list.at(k)).push_back(index);
-
-					vector<float> vec;
-					for(unsigned i=1; i<line_obj.size(); i++)		// NOTE: here we start from pos#1
-					{
-						char * pointer = line_obj.at(i);
-						//float value = stof(pointer);				// NOTE: there are double-range numbers
-						float value = stod(pointer);
-						vec.push_back(value);
-					}
-					line_obj.release();
-
-					//@@
-					(vec_tensor_expr.at(k)).push_back(vec);
-				}
-				free(line);
-				file.close();
+				//
+				Y.append(K, dimension1, dimension2, pointer_indiv, pointer_data);
 			}
-			//
-			Y.init_incomp(vec_tensor_expr, vec_indiv_pos_list);
+			/////////
+
 		}
 		//
 	}

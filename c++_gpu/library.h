@@ -611,6 +611,24 @@ public:
 	}
 
 
+	void append(int length1, int length2, int length3, int * pointer_indiv, float * pointer_data)
+	{
+		//
+		dimension1 = length1;
+		//
+		list_dimension2.push_back(length2);
+		//
+		dimension3 = length3;
+		//
+		list_list_indiv_pos.push_back(pointer_indiv);
+		//
+		list_matrix.push_back(pointer_data);
+
+		return;
+	}
+
+
+
 	int get_dimension2_at(int pos)
 	{
 		return list_dimension2.at(pos);

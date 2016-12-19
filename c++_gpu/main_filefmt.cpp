@@ -266,6 +266,7 @@ int main()
 	//===============================
 	//==== X train and X test
 	//===============================
+	/*
 	{
 		Matrix X;																			// matrix of first layer cell factor beta
 		char filename[100];
@@ -285,6 +286,7 @@ int main()
 		outfile.close();
 		cout << "save train X.m.dat done..." << endl;
 	}
+	*/
 	/*
 	{
 		Matrix X;																			// matrix of first layer cell factor beta
@@ -312,15 +314,114 @@ int main()
 
 
 
+
+
+
+
 	//===============================
 	//==== Y (incomplete tensor)
 	//===============================
+	//@@@@@@@@@@@@
+	// protocol: each tissue separated; first two int, dimensions; dimension1 int, for indiv pos; dimension1xdimension2, matrix
+	//@@@@@@@@@@@@
+	//==== training Y
+	cout << "loading incomplete Y tensor..." << endl;
+	{
+		Tensor_expr Y;					// tensor of gene expression
+		//
+		int K = 28;					// TODO
+
+		//@@
+		vector<vector<vector<float>>> vec_tensor_expr;
+		vector<vector<int>> vec_indiv_pos_list;
+
+		for(int k=0; k<K; k++)
+		{
+			cout << "tissue#" << k << endl;
+			//@@
+			vector<vector<float>> vec0;
+			vec_tensor_expr.push_back(vec0);
+			vector<int> vec1;
+			vec_indiv_pos_list.push_back(vec1);
+
+			char filename[100];
+			filename[0] = '\0';
+			strcat(filename, "../../preprocess/data_train/Tensor_tissue_");
+			char tissue[10];
+			sprintf(tissue, "%d", k);
+			strcat(filename, tissue);
+			strcat(filename, ".txt");
+
+			char type[10] = "r";
+			filehandle file(filename, type);
+
+			long input_length = 1000000000;
+			char * line = (char *)malloc( sizeof(char) * input_length );
+			while(1)
+			{
+				int end = file.readline(line, input_length);
+				if(end)
+					break;
+
+				line_class line_obj(line);
+				line_obj.split_tab();
+
+				int index = atoi(line_obj.at(0));
+				//@@
+				(vec_indiv_pos_list.at(k)).push_back(index);
+
+				vector<float> vec;
+				for(unsigned i=1; i<line_obj.size(); i++)		// NOTE: here we start from pos#1
+				{
+					char * pointer = line_obj.at(i);
+					//float value = stof(pointer);				// NOTE: there are double-range numbers
+					float value = stod(pointer);
+					vec.push_back(value);
+				}
+				line_obj.release();
+
+				//@@
+				(vec_tensor_expr.at(k)).push_back(vec);
+			}
+			free(line);
+			file.close();
+		}
+		//
+		Y.init_incomp(vec_tensor_expr, vec_indiv_pos_list);
 
 
+		// save in binary format
+		for(int k=0; k<K; k++)
+		{
+			//==== save the data in binary format
+			int dimension1 = Y.get_dimension2_at(k);
+			int dimension2 = Y.get_dimension3();
+			int * pointer_indiv = Y.get_list_indiv_pos_at(k);
+			float * pointer_data = Y.get_matrix_at(k);
+			//
+			char filename[100];
+			filename[0] = '\0';
+			strcat(filename, "../../preprocess/data_train/Tensor_tissue_");
+			char tissue[10];
+			sprintf(tissue, "%d", k);
+			strcat(filename, tissue);
+			strcat(filename, ".lm.bat");
+			ofstream outfile(filename, ios::binary | ios::out);
+			//
+			outfile.write((char *)&dimension1, sizeof(dimension1));
+			outfile.write((char *)&dimension2, sizeof(dimension2));
+			outfile.write((char *)pointer_indiv, dimension1*sizeof(int));					// indiv pos takes int value
+			outfile.write((char *)pointer_data, (dimension1*dimension2)*sizeof(float));
+			//
+			outfile.close();
+		}
+	}
+	//==== testing Y
+	/*
+	{
 
-
-
-
+	}
+	*/
 
 
 
@@ -328,7 +429,6 @@ int main()
 
 	return 0;
 }
-
 
 
 

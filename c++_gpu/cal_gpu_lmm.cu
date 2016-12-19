@@ -294,51 +294,90 @@ void cal_gpu_lmm()
 		//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 		// func: d_cellfactor =(+=) d_X_sub x d_beta_sub_reshape;
 		// dimension: (N, D) = (N, dimension2) x (dimension2, D)
+		//{
+			// NOTE: the following timer will make the cuda part wrong; so we put timer inside the if/else
+			// //==== timing
+		 //    // Allocate CUDA events that we'll use for timing
+		 //    cudaEvent_t start;
+		 //    cudaEventCreate(&start);
+		 //    cudaEvent_t stop;
+		 //    cudaEventCreate(&stop);
+		 //    // Record the start event
+		 //    cudaEventRecord(start, NULL);
+
+		//
+		if(start == 0)
 		{
 			//==== timing
-		    // Allocate CUDA events that we'll use for timing
-		    cudaEvent_t start;
-		    cudaEventCreate(&start);
-		    cudaEvent_t stop;
-		    cudaEventCreate(&stop);
-		    // Record the start event
-		    cudaEventRecord(start, NULL);
+			// Allocate CUDA events that we'll use for timing
+			cudaEvent_t start;
+			cudaEventCreate(&start);
+			cudaEvent_t stop;
+			cudaEventCreate(&stop);
+			// Record the start event
+			cudaEventRecord(start, NULL);
 
-			//			
-			if(start == 0)
-			{
-				const float alpha = 1.0f;
-				const float beta  = 0.0f;					// the first time, add
+			//
+			const float alpha = 1.0f;
+			const float beta  = 0.0f;					// the first time, add
 
-				cublasHandle_t handle;
-				checkCudaErrors(cublasCreate(&handle));
-				//note cublas is column primary! need to transpose the order
-				//checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix_size.uiWB, matrix_size.uiHA, matrix_size.uiWA, &alpha, d_B, matrix_size.uiWB, d_A, matrix_size.uiWA, &beta, d_C, matrix_size.uiWB));
-				checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, D, N, dimension2, &alpha, d_beta_sub_reshape, D, d_X_sub, dimension2, &beta, d_cellfactor, D));
-				checkCudaErrors(cublasDestroy(handle));
-			}
-			else
-			{
-				const float alpha = 1.0f;
-				const float beta  = 1.0f;					// all the following, add-on
-
-				cublasHandle_t handle;
-				checkCudaErrors(cublasCreate(&handle));
-				//note cublas is column primary! need to transpose the order
-				//checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix_size.uiWB, matrix_size.uiHA, matrix_size.uiWA, &alpha, d_B, matrix_size.uiWB, d_A, matrix_size.uiWA, &beta, d_C, matrix_size.uiWB));
-				checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, D, N, dimension2, &alpha, d_beta_sub_reshape, D, d_X_sub, dimension2, &beta, d_cellfactor, D));
-				checkCudaErrors(cublasDestroy(handle));
-			}
+			cublasHandle_t handle;
+			checkCudaErrors(cublasCreate(&handle));
+			//note cublas is column primary! need to transpose the order
+			//checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix_size.uiWB, matrix_size.uiHA, matrix_size.uiWA, &alpha, d_B, matrix_size.uiWB, d_A, matrix_size.uiWA, &beta, d_C, matrix_size.uiWB));
+			checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, D, N, dimension2, &alpha, d_beta_sub_reshape, D, d_X_sub, dimension2, &beta, d_cellfactor, D));
+			checkCudaErrors(cublasDestroy(handle));
 
 			//==== timing
-		    // Record the stop event
-		    cudaEventRecord(stop, NULL);
-		    // Wait for the stop event to complete
-		    cudaEventSynchronize(stop);
-		    float msecTotal = 0.0f;
-		    cudaEventElapsedTime(&msecTotal, start, stop);
-		    printf("Time= %.3f msec\n", msecTotal);
+			// Record the stop event
+			cudaEventRecord(stop, NULL);
+			// Wait for the stop event to complete
+			cudaEventSynchronize(stop);
+			float msecTotal = 0.0f;
+			cudaEventElapsedTime(&msecTotal, start, stop);
+			printf("Time= %.3f msec\n", msecTotal);	
 		}
+		else
+		{
+			//==== timing
+			// Allocate CUDA events that we'll use for timing
+			cudaEvent_t start;
+			cudaEventCreate(&start);
+			cudaEvent_t stop;
+			cudaEventCreate(&stop);
+			// Record the start event
+			cudaEventRecord(start, NULL);
+
+			//
+			const float alpha = 1.0f;
+			const float beta  = 1.0f;					// all the following, add-on
+
+			cublasHandle_t handle;
+			checkCudaErrors(cublasCreate(&handle));
+			//note cublas is column primary! need to transpose the order
+			//checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix_size.uiWB, matrix_size.uiHA, matrix_size.uiWA, &alpha, d_B, matrix_size.uiWB, d_A, matrix_size.uiWA, &beta, d_C, matrix_size.uiWB));
+			checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, D, N, dimension2, &alpha, d_beta_sub_reshape, D, d_X_sub, dimension2, &beta, d_cellfactor, D));
+			checkCudaErrors(cublasDestroy(handle));
+
+			//==== timing
+			// Record the stop event
+			cudaEventRecord(stop, NULL);
+			// Wait for the stop event to complete
+			cudaEventSynchronize(stop);
+			float msecTotal = 0.0f;
+			cudaEventElapsedTime(&msecTotal, start, stop);
+			printf("Time= %.3f msec\n", msecTotal);	
+		}
+
+			// //==== timing
+		 //    // Record the stop event
+		 //    cudaEventRecord(stop, NULL);
+		 //    // Wait for the stop event to complete
+		 //    cudaEventSynchronize(stop);
+		 //    float msecTotal = 0.0f;
+		 //    cudaEventElapsedTime(&msecTotal, start, stop);
+		 //    printf("Time= %.3f msec\n", msecTotal);
+		//}
 		//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 
 

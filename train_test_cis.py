@@ -1,15 +1,3 @@
-## do the mini-batch gradient descent
-
-## NOTE:
-##	1. dimension indicators should be used whenever needed, rather than the len(Var) (as input will be appended to the intercept term)
-##	2. batch has consistent effects across different tissues (so we don't have tissue-specific parameters)
-
-## NOTE:
-##	1. in this script, I use (n x k) to index the data, so I need to reshape beta everytime (from (d x k) to (k x d)); data should normally have (k x n) shape
-
-
-
-
 import numpy as np
 import math
 import timeit
@@ -169,16 +157,22 @@ if __name__ == "__main__":
 			continue
 
 		## for cis- genes
-		for k in range(K):
-			#get the X_sub for the avaliable samples for this tissue
-			X_sub = X[Y_pos[k]][start:end+1]
-			array_ones = (np.array([np.ones(len(X_sub))])).T
-			X_sub = np.concatenate((X_sub, array_ones), axis=1)					# N x (amount+1)
+		## DEBUG the LinAlgError
+		try:
+			for k in range(K):
+				#get the X_sub for the avaliable samples for this tissue
+				X_sub = X[Y_pos[k]][start:end+1]
+				array_ones = (np.array([np.ones(len(X_sub))])).T
+				X_sub = np.concatenate((X_sub, array_ones), axis=1)					# N x (amount+1)
 
-			# the linear system: X_sub x beta = Y_sub
-			Y_sub = Y_cis[k][:, j]												# N x 1
-			init_beta_sub = np.linalg.lstsq(X_sub, Y_sub)[0]
-			init_beta_cis[k][j] = init_beta_sub
+				# the linear system: X_sub x beta = Y_sub
+				Y_sub = Y_cis[k][:, j]												# N x 1
+				init_beta_sub = np.linalg.lstsq(X_sub, Y_sub)[0]
+				init_beta_cis[k][j] = init_beta_sub
+		except:
+			print "LinAlgError: gene#", j
+
+
 	init_beta_cis = np.array(init_beta_cis)
 	print "init_beta_cis shape:",
 	print init_beta_cis.shape
@@ -187,6 +181,7 @@ if __name__ == "__main__":
 	print type(init_beta_cis[0]),
 	print type(init_beta_cis[0][0])
 	np.save("./data_real_init/beta_cis", init_beta_cis)
+
 
 
 

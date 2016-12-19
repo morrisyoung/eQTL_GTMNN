@@ -69,7 +69,7 @@ float cal_error()
 
 
 
-	/*
+
 	float error_total = 0;
 	for(int k=0; k<K; k++)
 	{
@@ -180,11 +180,14 @@ float cal_error()
 
 		error_total += error;
 	}
-	*/
+
 
 
 	// DEBUG
-	float error_total = 0;
+	//float error_total = 0;
+
+
+
 
 	return error_total;
 }

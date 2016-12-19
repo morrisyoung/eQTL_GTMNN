@@ -413,8 +413,8 @@ if __name__ == "__main__":
 	##========================================================================
 	##==== load data
 	##
-	fileheader = "../workbench1/data_simu_data/"
-	#fileheader = "../preprocess/data_train/"
+	#fileheader = "../workbench1/data_simu_data/"
+	fileheader = "../preprocess/data_train/"
 
 	#
 	X = np.load(fileheader + "X.npy")
@@ -431,8 +431,8 @@ if __name__ == "__main__":
 	Y_pos = np.array(Y_pos)
 
 	##
-	fileheader = "../workbench1/data_simu_init/"
-	#fileheader = "../preprocess/data_real_init/"
+	#fileheader = "../workbench1/data_simu_init/"
+	fileheader = "../preprocess/data_real_init/"
 	#
 	beta_cellfactor1 = np.load(fileheader + "beta_cellfactor1.npy")
 	beta_cellfactor2 = np.load(fileheader + "beta_cellfactor2.npy")
@@ -560,6 +560,7 @@ if __name__ == "__main__":
 
 
 
+		'''
 		if iter1 == 0:
 			## error before
 			##============================================
@@ -575,6 +576,7 @@ if __name__ == "__main__":
 
 
 		forward_backward_gd()
+		'''
 
 
 
@@ -585,10 +587,12 @@ if __name__ == "__main__":
 		list_error.append(error)
 		np.save("./result/list_error", np.array(list_error))
 
+		'''
 		error = cal_error_test()
 		print "[error_after] current total error (test):", error
 		list_error_test.append(error)
 		np.save("./result/list_error_test", np.array(list_error_test))
+		'''
 		##============================================
 
 
@@ -598,6 +602,7 @@ if __name__ == "__main__":
 
 
 
+		'''
 		##==== save results per need
 		if iter1 % 5 == 0:
 			start_time = timeit.default_timer()
@@ -605,6 +610,7 @@ if __name__ == "__main__":
 			np.save("./result/beta_cellfactor2", beta_cellfactor2)
 			elapsed = timeit.default_timer() - start_time
 			print "time spent on saving the data:", elapsed
+		'''
 
 
 
@@ -612,10 +618,12 @@ if __name__ == "__main__":
 	##==== timer, for speed test
 	print "speed:", (timeit.default_timer() - start_time_total) / num_iter
 
+	'''
 	##==== save the model
 	np.save("./result/beta_cellfactor1", beta_cellfactor1)
 	np.save("./result/beta_cellfactor2", beta_cellfactor2)
 	print "now it's done..."
+	'''
 
 
 

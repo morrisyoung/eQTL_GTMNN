@@ -47,6 +47,18 @@ using namespace std;
 //			4. xxx
 
 
+// opt this routine helps speedup:
+// before opt (wide mm):
+//	CUDA: 115.097735 seconds
+//	Numpy: 3.92883896828 sec
+// after opt (total train error cal):
+//	CUDA: 8.637569 sec
+//	Numpy: 5.87872886658 sec
+
+
+
+
+
 
 
 

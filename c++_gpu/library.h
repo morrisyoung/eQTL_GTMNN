@@ -27,6 +27,82 @@ using namespace std;
 
 
 
+class Map_list
+{
+	int dimension;									// number of genes
+	int * list_start;								// list of start pos
+	int * list_end;									// list of end pos
+	int * list_indi_cis;							// indicating whether or not this gene has cis- SNPs
+
+public:
+
+	// used for loading data, since we might use other containers to load data first of all
+	void init(vector<vector<int>> & container)
+	{
+		dimension = container.size();
+		list_start = (int *)calloc( dimension, sizeof(int) );
+		list_end = (int *)calloc( dimension, sizeof(int) );
+		list_indi_cis = (int *)calloc( dimension, sizeof(int) );
+
+		for(int i=0; i<dimension; i++)
+		{
+			list_start[i] = (container.at(i)).at(0);
+			list_end[i] = (container.at(i)).at(1);
+
+			if (list_end[i] == -1)
+			{
+				list_indi_cis[i] = 0;
+			}
+			else
+			{
+				list_indi_cis[i] = 1;
+			}
+		}
+
+		return;
+	}
+
+	int get_start_at(int pos)
+	{
+		return list_start[pos];
+	}
+
+	int get_end_at(int pos)
+	{
+		return list_end[pos];
+	}
+
+	int * get_list_start()
+	{
+		return list_start;
+	}
+
+	int * get_list_end()
+	{
+		return list_end;
+	}
+
+	int * get_list_indi_cis()
+	{
+		return list_indi_cis;
+	}
+
+
+	// delete object
+	void release()
+	{
+		free(list_start);
+		free(list_end);
+		free(list_indi_cis);
+		return;
+	}
+
+};
+
+
+
+
+
 //=============/=============/=============/=============/=============/=============/=============/=============
 //=============/=============/=============/=============/=============/=============/=============/=============
 //=============/=============/=============/=============/=============/=============/=============/=============
@@ -634,6 +710,13 @@ public:
 		return list_dimension2.at(pos);
 	}
 
+	int * get_list_dimension2()
+	{
+		int * pointer = list_dimension2.data();
+		return pointer;
+	}
+
+
 	int get_dimension3()
 	{
 		return dimension3;
@@ -652,6 +735,13 @@ public:
 	int get_indiv_pos_at(int index_tissue, int pos)
 	{
 		return (list_list_indiv_pos.at(index_tissue))[pos];
+	}
+
+
+	float * get_sample_array_at(int index_tissue, int index_sample)
+	{
+		float * pointer = list_matrix.at(index_tissue) + index_sample*dimension3;
+		return pointer;
 	}
 
 
@@ -674,8 +764,223 @@ public:
 
 
 
+class Tensor_beta_cis
+{
+	int dimension1;										// number of tissues
+	int dimension2;										// number of genes
+	//vector<int> list_dimension3;						// number of dimension3 for different dimension2 (gene)
+	int * list_dimension3;								// same as above
+	int * list_start;									// kind of same as above
+	int amount;											// total amount of cis- parameters (for one tissue)
+	vector<float *>	list_incomp_matrix;					// incomplete beta matrix for different tissues
+	int * list_beta_cis_geneindex;						// mapping each parameter to their gene index
+
+
+public:
+
+
+	// used for loading data, since we might use other containers to load data first of all
+	void init(vector<vector<vector<float>>> & container)
+	{
+		//==== meta info
+		dimension1 = container.size();
+		dimension2 = (container.at(0)).size();
+		//
+		list_dimension3 = (int *)calloc( dimension2, sizeof(int) );
+		amount = 0;
+		for(int i=0; i<dimension2; i++)
+		{
+			int dimension3 = ((container.at(0)).at(i)).size();
+			amount += dimension3;
+			list_dimension3[i] = dimension3;
+		}
+		//
+		list_start = (int *)calloc( dimension2, sizeof(int) );
+		for(int i=0; i<dimension2; i++)
+		{
+			if(i==0)
+			{
+				list_start[i] = 0;
+			}
+			else
+			{
+				list_start[i] = list_start[i-1] + list_dimension3[i-1];
+			}
+		}
+		//
+		list_beta_cis_geneindex = (int *)calloc( amount, sizeof(int) );
+		int pos = 0;
+		for(int i=0; i<dimension2; i++)
+		{
+			int dimension3 = list_dimension3[i];
+			for(int j=0; j<dimension3; j++)
+			{
+				list_beta_cis_geneindex[pos] = i;
+				pos += 1;
+			}
+		}
+
+
+		//==== fill in (so ugly...)
+		for(long int i=0; i<dimension1; i++)
+		{
+			float * pointer = (float *)calloc( amount, sizeof(float) );
+			list_incomp_matrix.push_back(pointer);
+
+			int pos = 0;
+			for(int j=0; j<dimension2; j++)
+			{
+				int dimension3 = list_dimension3[j];
+				for(int d=0; d<dimension3; d++)
+				{
+					float value = ((container.at(i)).at(j)).at(d);
+					(list_incomp_matrix.at(i))[pos] = value;
+					pos += 1;
+				}
+			}
+		}
+
+		return;
+	}
+
+	// binary fill in
+	void init(int ref_dimension1, int ref_dimension2, int * ref_list_dimension3, int * ref_list_start, int ref_amount, vector<float *> & ref_list_incomp_matrix, int * ref_list_beta_cis_geneindex)
+	{
+		//==== meta info
+		dimension1 = ref_dimension1;
+		dimension2 = ref_dimension2;
+		//
+		list_dimension3 = ref_list_dimension3;
+		list_start = ref_list_start;
+		amount = ref_amount;
+		//
+		list_beta_cis_geneindex = ref_list_beta_cis_geneindex;
+
+		//
+		for(int i=0; i<dimension1; i++)
+		{
+			float * pointer = ref_list_incomp_matrix.at(i);
+			list_incomp_matrix.push_back(pointer);
+		}
+
+		return;
+	}
+
+
+
+	int get_dimension1()
+	{
+		return dimension1;
+	}
+
+	int get_dimension2()
+	{
+		return dimension2;
+	}
+
+	int * get_list_dimension3()
+	{
+		return list_dimension3;
+	}
+
+	int * get_list_start()
+	{
+		return list_start;
+	}
+
+	float * get_incomp_matrix_at(int pos)
+	{
+		return list_incomp_matrix.at(pos);
+	}
+
+	int get_amount()
+	{
+		return amount;
+	}
+
+	int * get_list_beta_cis_geneindex()
+	{
+		return list_beta_cis_geneindex;
+	}
+
+
+	int get_start_beta(int index_gene)
+	{
+		return list_start[index_gene];
+	}
+
+	int get_end_beta(int index_gene)
+	{
+		return (list_start[index_gene] + list_dimension3[index_gene] - 1);
+	}
+
+
+
+	// // given a filename, try to save this tensor into a file
+	// void save(char * filename)
+	// {
+	// 	FILE * file_out = fopen(filename, "w+");
+	// 	if(file_out == NULL)
+	// 	{
+	// 	    fputs("File error\n", stderr); exit(1);
+	// 	}
+
+	// 	char buf[1024];
+	// 	sprintf(buf, "%d\t", dimension1);
+	// 	fwrite(buf, sizeof(char), strlen(buf), file_out);
+	// 	sprintf(buf, "%d\t", dimension2);
+	// 	fwrite(buf, sizeof(char), strlen(buf), file_out);
+	// 	fwrite("\n", sizeof(char), 1, file_out);
+
+	// 	for(long int k=0; k<dimension1; k++)
+	// 	{
+	// 		float * matrix = list_incomp_matrix.at(k);
+	// 		int pos = 0;
+
+	// 		for(long int i=0; i<dimension2; i++)
+	// 		{
+	//			int dimension3 = list_dimension3[i];
+	// 			for(int j=0; j<dimension3; j++)
+	// 			{
+	// 				//
+	// 				float value = matrix[pos];
+	// 				char buf[1024];
+	// 				sprintf(buf, "%f\t", value);
+	// 				fwrite(buf, sizeof(char), strlen(buf), file_out);
+	// 				//
+	// 				pos += 1;
+	// 			}
+	// 			fwrite("\n", sizeof(char), 1, file_out);
+	// 		}
+
+	// 	}
+	// 	fclose(file_out);
+	// 	return;
+	// }
+
+
+	// delete object
+	void release()
+	{
+		free(list_start);
+		for(int i=0; i<dimension1; i++)
+		{
+			free(list_incomp_matrix.at(i));
+		}
+		free(list_beta_cis_geneindex);
+
+		return;
+	}
+
+
+};
+
+
+
+
 
 #endif
 
 // end of library.h
+
 

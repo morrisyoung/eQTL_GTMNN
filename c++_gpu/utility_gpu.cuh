@@ -237,6 +237,35 @@ kernel_cal_subtract(int dimension1, int dimension2, float * result, float * matr
 
 
 
+// subtract matrix2 from matrix1, and save results into matrix1
+template <int BLOCK_SIZE> __global__ void
+kernel_cal_subtractout(int dimension1, int dimension2, float * matrix1, float * matrix2)
+{
+	// Block index
+	long int bx = blockIdx.x;
+	long int by = blockIdx.y;
+
+	// Thread index
+	long int tx = threadIdx.x;
+	long int ty = threadIdx.y;
+
+	// indexing in the matrix
+	long int i = by * blockDim.y + ty;
+	long int j = bx * blockDim.x + tx;
+
+	// boundary check
+	if(i<dimension1 && j<dimension2)						// (i, j) is one (sample, gene) point
+	{
+		int pos = i*dimension2+j;
+		matrix1[pos] = matrix1[pos] - matrix2[pos];
+	}
+
+	return;
+}
+
+
+
+
 
 //=============/=============/=============/=============/=============/=============/=============/=============
 //=============/=============/=============/=============/=============/=============/=============/=============

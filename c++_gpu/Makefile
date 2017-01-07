@@ -226,8 +226,8 @@ SRCS=	main.cpp data_interface.cpp
 OBJS=	main.o data_interface.o
 #SRCS_GPU=	mem_gpu_setup.cu fbward_gd.cu cal_error.cu
 #BJS_GPU=	mem_gpu_setup.o fbward_gd.o cal_error.o
-SRCS_GPU=	cal_gpu_lmm.cu cal_error.cu mem_gpu_setup.cu
-OBJS_GPU=	cal_gpu_lmm.o cal_error.o mem_gpu_setup.o
+SRCS_GPU=	cal_gpu_lmm.cu cal_error.cu mem_gpu_setup.cu fbward_gd.cu
+OBJS_GPU=	cal_gpu_lmm.o cal_error.o mem_gpu_setup.o fbward_gd.o
 EXECUTABLE=	main
 
 
@@ -235,7 +235,7 @@ EXECUTABLE=	main
 
 
 # Target rules
-all: build clean mv
+all: build mv
 
 
 filefmt: main_filefmt clean mv

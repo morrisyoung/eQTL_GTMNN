@@ -172,13 +172,14 @@ def forward_backward_gd():
 
 
 
+
 	##=========##=========##=========##=========##=========##=========##=========##=========##==
 	##==========================================================================================
 	## forward prop
 	##==========================================================================================
 	##=========##=========##=========##=========##=========##=========##=========##=========##==
 	##=============
-	## from cis- (for all tissues this tissue contains)
+	## from cis- (for all tissues this mini-batch contains)
 	##=============
 	Y_cis_batch = []
 	for i in range(len(list_tissue_batch)):
@@ -196,7 +197,9 @@ def forward_backward_gd():
 				temp = np.zeros(size_batch) + beta_cis[k][j][0]
 				Y_cis.append(temp)
 			else:
-				X_sub = X[Y_pos_bacth[i], start:end+1]
+				#X_sub = X[Y_pos_bacth[i], start:end+1]
+				X_sub = X[Y_pos_bacth[i]]
+				X_sub = X_sub[:, start:end+1]
 				array_ones = (np.array([np.ones(size_batch)])).T
 				X_sub = np.concatenate((X_sub, array_ones), axis=1)						# size_batch x (amount+1)
 				beta_sub = beta_cis[k][j]												# 1 x (amount+1)
@@ -257,6 +260,11 @@ def forward_backward_gd():
 
 
 
+	## NOTE: the TYPEERROR comes from the above part!!!
+	## (the error code: TypeError: Cannot cast ufunc add output from dtype('float64') to dtype('int64') with casting rule 'same_kind')
+
+
+
 	##=========##=========##=========##=========##=========##=========##=========##=========##==
 	##==========================================================================================
 	## regularization
@@ -267,7 +275,9 @@ def forward_backward_gd():
 	for i in range(len(beta_cis)):
 		for j in range(len(beta_cis[i])):
 			sign = np.sign(beta_cis[i][j])
-			der_cis[i][j] += rate_lasso_beta_cis * sign
+			der_cis[i][j] = der_cis[i][j] + rate_lasso_beta_cis * sign
+			## the below one is problematic, since since sign couldn't be automatically converted into integer (der_cis is integer)
+			#der_cis[i][j] += rate_lasso_beta_cis * sign
 
 
 
@@ -279,9 +289,6 @@ def forward_backward_gd():
 	beta_cis = beta_cis - rate_learn * der_cis
 
 	return
-
-
-
 
 
 
@@ -452,9 +459,11 @@ if __name__ == "__main__":
 
 	##
 	#fileheader = "../workbench1/data_simu_init/"
-	fileheader = "../preprocess/data_real_init/"
+	#fileheader = "../preprocess/data_real_init/"
+	#fileheader = "./data_real_init/"
+	fileheader = "../workbench54/data_real_init/"
 	#
-	beta_cellfactor1 = np.load(fileheader + "beta_cis.npy")
+	beta_cis = np.load(fileheader + "beta_cis.npy")
 
 	##==== fill dimension
 	I = len(X[0])
@@ -509,6 +518,7 @@ if __name__ == "__main__":
 
 
 
+
 	##==============================================
 	## cal the data variance (training and testing)
 	##==============================================
@@ -537,6 +547,8 @@ if __name__ == "__main__":
 	print "testing set total var:", var
 	# save
 	np.save("./result/list_var_data", list_var_data)
+
+
 
 
 
@@ -594,6 +606,8 @@ if __name__ == "__main__":
 
 
 
+
+		'''
 		forward_backward_gd()
 
 
@@ -610,6 +624,9 @@ if __name__ == "__main__":
 		list_error_test.append(error)
 		np.save("./result/list_error_test", np.array(list_error_test))
 		##============================================
+		'''
+
+
 
 
 		##==== timer
@@ -618,22 +635,28 @@ if __name__ == "__main__":
 
 
 
+
+		'''
 		##==== save results per need
 		if iter1 % 5 == 0:
 			start_time = timeit.default_timer()
 			np.save("./result/beta_cis", beta_cis)
 			elapsed = timeit.default_timer() - start_time
 			print "time spent on saving the data:", elapsed
+		'''
+
+
 
 
 	print "done!"
 	##==== timer, for speed test
 	print "speed:", (timeit.default_timer() - start_time_total) / num_iter
 
+	'''
 	##==== save the model
 	np.save("./result/beta_cis", beta_cis)
 	print "now it's done..."
-
+	'''
 
 
 

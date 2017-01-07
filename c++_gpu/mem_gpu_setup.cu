@@ -80,6 +80,10 @@ void mem_gpu_init()
 	//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==//==
 	checkCudaErrors(cudaMalloc((void **) &d_cellfactor_new_sub, (N*(D+1))*sizeof(float)));
 
+
+
+
+
 	////
 	//vector<int *> d_Y_pos_vec;		// for d_list_pos
 	//vector<float *> d_Y_exp_vec;		// for d_Y_sub_exp
@@ -107,6 +111,74 @@ void mem_gpu_init()
 		checkCudaErrors(cudaMemcpy(d_Y_sub, Y_sub_pointer, (dimension1*J)*sizeof(float), cudaMemcpyHostToDevice));
 		d_Y_vec.push_back(d_Y_sub);
 	}
+
+
+	////
+	//// the test set of Y relevant
+	//vector<int *> d_Y_pos_vec_test;				// for d_list_pos
+	//vector<float *> d_Y_exp_vec_test;			// for d_Y_sub_exp
+	//vector<float *> d_Y_vec_test;				// for d_Y_sub
+	for(int k=0; k<K; k++)
+	{
+		int dimension1 = Y_test.get_dimension2_at(k);
+
+		// d_list_pos_test --> d_Y_pos_vec_test
+		int * d_list_pos_test;
+		int * list_pos_test = Y_test.get_list_indiv_pos_at(k);
+		checkCudaErrors(cudaMalloc((void **) &d_list_pos_test, dimension1*sizeof(int)));
+		checkCudaErrors(cudaMemcpy(d_list_pos_test, list_pos_test, dimension1*sizeof(int), cudaMemcpyHostToDevice));
+		d_Y_pos_vec_test.push_back(d_list_pos_test);
+
+		// d_Y_sub_exp_test --> d_Y_exp_vec_test
+		float * d_Y_sub_exp_test;
+		checkCudaErrors(cudaMalloc((void **) &d_Y_sub_exp_test, (dimension1*J)*sizeof(float)));
+		d_Y_exp_vec_test.push_back(d_Y_sub_exp_test);
+
+		//== d_Y_sub_test --> d_Y_vec_test
+		float * d_Y_sub_test;
+		checkCudaErrors(cudaMalloc((void **) &d_Y_sub_test, (dimension1*J)*sizeof(float)));
+		float * Y_sub_test_pointer = Y_test.get_matrix_at(k);
+		checkCudaErrors(cudaMemcpy(d_Y_sub_test, Y_sub_test_pointer, (dimension1*J)*sizeof(float), cudaMemcpyHostToDevice));
+		d_Y_vec_test.push_back(d_Y_sub_test);
+	}
+
+
+
+
+
+
+
+	//// cis- relevant
+	//== list_cis_start, d_list_cis_start
+	int * list_cis_start = mapping_cis.get_list_start();
+	checkCudaErrors(cudaMalloc((void **) &d_list_cis_start, J*sizeof(int)));
+	checkCudaErrors(cudaMemcpy(d_list_cis_start, list_cis_start, J*sizeof(int), cudaMemcpyHostToDevice));
+	//== list_cis_end, d_list_cis_end
+	int * list_cis_end = mapping_cis.get_list_end();
+	checkCudaErrors(cudaMalloc((void **) &d_list_cis_end, J*sizeof(int)));
+	checkCudaErrors(cudaMemcpy(d_list_cis_end, list_cis_end, J*sizeof(int), cudaMemcpyHostToDevice));
+	//== list_indi_cis, d_list_indi_cis
+	int * list_indi_cis = mapping_cis.get_list_indi_cis();
+	checkCudaErrors(cudaMalloc((void **) &d_list_indi_cis, J*sizeof(int)));
+	checkCudaErrors(cudaMemcpy(d_list_indi_cis, list_indi_cis, J*sizeof(int), cudaMemcpyHostToDevice));
+
+	//== list_beta_cis_start, d_list_beta_cis_start
+	int * list_beta_cis_start = beta_cis.get_list_start();
+	checkCudaErrors(cudaMalloc((void **) &d_list_beta_cis_start, J*sizeof(int)));
+	checkCudaErrors(cudaMemcpy(d_list_beta_cis_start, list_beta_cis_start, J*sizeof(int), cudaMemcpyHostToDevice));
+	//== list_beta_cis_geneindex, d_list_beta_cis_geneindex
+	int * list_beta_cis_geneindex = beta_cis.get_list_beta_cis_geneindex();
+	int amount = beta_cis.get_amount();
+	checkCudaErrors(cudaMalloc((void **) &d_list_beta_cis_geneindex, amount*sizeof(int)));
+	checkCudaErrors(cudaMemcpy(d_list_beta_cis_geneindex, list_beta_cis_geneindex, amount*sizeof(int), cudaMemcpyHostToDevice));
+
+	//== d_beta_cis_sub, d_der_cis_sub
+	//int amount = beta_cis.get_amount();
+	checkCudaErrors(cudaMalloc((void **) &d_beta_cis_sub, amount*sizeof(float)));
+	checkCudaErrors(cudaMalloc((void **) &d_der_cis_sub, amount*sizeof(float)));
+
+
+
 
 
 	return;
@@ -151,6 +223,25 @@ void mem_gpu_release()
 		checkCudaErrors(cudaFree(d_Y_exp_vec[k]));
 		checkCudaErrors(cudaFree(d_Y_vec[k]));
 	}
+	//
+	for(int k=0; k<K; k++)
+	{
+		checkCudaErrors(cudaFree(d_Y_pos_vec_test[k]));
+		checkCudaErrors(cudaFree(d_Y_exp_vec_test[k]));
+		checkCudaErrors(cudaFree(d_Y_vec_test[k]));
+	}
+
+
+
+	//// cis- relevant
+	checkCudaErrors(cudaFree(d_list_cis_start));
+	checkCudaErrors(cudaFree(d_list_cis_end));
+	checkCudaErrors(cudaFree(d_list_indi_cis));
+	checkCudaErrors(cudaFree(d_list_beta_cis_start));
+	checkCudaErrors(cudaFree(d_list_beta_cis_geneindex));
+	checkCudaErrors(cudaFree(d_beta_cis_sub));
+	checkCudaErrors(cudaFree(d_der_cis_sub));
+
 
 
 	return;

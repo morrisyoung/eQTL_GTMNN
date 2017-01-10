@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 #import seaborn as sns
 from numpy.linalg import inv
+import os
+
 
 
 
@@ -18,11 +20,18 @@ list_chr_color = ['k', '#988ED5', 'm', '#8172B2', '#348ABD', '#EEEEEE', '#FF9F9A
 
 
 
+
 if __name__ == "__main__":
 
 
 
 
+
+
+
+	##====================================================================================================================
+	## pre-processing
+	##====================================================================================================================
 	##====
 	'''
 	beta_cellfactor2 = np.load("./result/beta_cellfactor2.npy")
@@ -44,6 +53,7 @@ if __name__ == "__main__":
 
 
 
+
 	repo_genename = {}
 	file = open("./result/gene_name_gencode.v19.v6p.txt", 'r')
 	while 1:
@@ -56,16 +66,25 @@ if __name__ == "__main__":
 		name = line[1]
 		repo_genename[gene] = name
 	file.close()
-
+	#
 	list_gene = np.load("./result/Gene_list.npy")
+	#
+	list_gene_name = []
+	for gene in list_gene:
+		name = repo_genename[gene]
+		list_gene_name.append(name)
+	list_gene_name = np.array(list_gene_name)
+
+
 
 
 
 
 	"""
-	##====
+	##====================================================================================================================
 	#''' plot the factor matrix
-	k = 0																## TODO: change this
+	##====================================================================================================================
+	k = 0																## TODO: other tissues
 	beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
 	print np.amax(beta_cellfactor2_sub)
 	print np.amin(beta_cellfactor2_sub)
@@ -104,50 +123,76 @@ if __name__ == "__main__":
 
 
 
+
+	##====================================================================================================================
 	##per factor sorted genes
-	k = 6																## TODO: change this
-	beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
-	print np.amax(beta_cellfactor2_sub)
-	print np.amin(beta_cellfactor2_sub)
+	## to save results
+	##====================================================================================================================
+	K = 28
+	for k in range(K):
+		print "tissue #", k
+		#k = 6																## TODO: change this
+		beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
+		print np.amax(beta_cellfactor2_sub)
+		print np.amin(beta_cellfactor2_sub)
 
 
-	#for d in range(len(beta_cellfactor2_sub)):
-	for d in [2]:
-		print d
-
-		beta = beta_cellfactor2_sub[d]
-		print beta.shape
-
-		#
-
-		beta_arg = np.argsort(beta)
-		beta_arg = beta_arg[::-1]
-		beta = beta[beta_arg]
-		#beta = np.sort(beta)
-		#beta = beta[-200:]
-		#beta = beta[::-1]
+		sort_gene = []
+		sort_beta = []
 
 
-		fig = plt.figure()
-		plt.plot(beta, 'ro', alpha=0.5)
+		for d in range(len(beta_cellfactor2_sub)):
+		#for d in [2]:
+			#print d
 
-		#plt.axis([0, len(beta), -50, 50])				# NOTE: manually test the range of the veta values
-		plt.grid(True)
-		plt.title("factor#" + str(d))
-		plt.xlabel("gene index (sorted)")
-		plt.ylabel("beta of genes")
-		#plt.savefig("/Users/shuoyang/Desktop/figs_genebetasort_k" + str(k) + "/d" + str(d) + ".png")
-		plt.show()
-		#plt.close(fig)
+			beta = beta_cellfactor2_sub[d]
+			#print beta.shape
+
+			#
+			beta_arg = np.argsort(beta)
+			beta_arg = beta_arg[::-1]
+			beta = beta[beta_arg]
+			#beta = np.sort(beta)
+			#beta = beta[-200:]
+			#beta = beta[::-1]
+
+			'''
+			fig = plt.figure()
+			plt.plot(beta, 'ro', alpha=0.5)
+
+			#plt.axis([0, len(beta), -50, 50])				# NOTE: manually test the range of the veta values
+			plt.grid(True)
+			plt.title("factor#" + str(d))
+			plt.xlabel("gene index (sorted)")
+			plt.ylabel("beta of genes")
+
+			plt.show()
+			plt.close(fig)
+			'''
+
+			#list_gene_sub = list_gene_name[beta_arg[:200]]
+			# list_gene_sub = list_gene_name[beta_arg]
+			# file = open("/Users/shuoyang/Desktop/genelist.txt", 'w')
+			# for gene in list_gene_sub:
+			# 	file.write(gene + '\n')
+			# file.close()
+
+			#
+			list_gene_sort = list_gene_name[beta_arg]
+			sort_gene.append(list_gene_sort)
+			sort_beta.append(beta)
+
+
+		sort_gene = np.array(sort_gene)
+		sort_beta = np.array(sort_beta)
+		np.save("./result_temp/beta2_k" + str(k) + "_sort_gene.npy", sort_gene)
+		np.save("./result_temp/beta2_k" + str(k) + "_sort_beta.npy", sort_beta)
+
+
+		#break
 
 
 
-		list_gene_sub = list_gene[beta_arg[:200]]
-		file = open("/Users/shuoyang/Desktop/genelist.txt", 'w')
-		for gene in list_gene_sub:
-			name = repo_genename[gene]
-			file.write(name + '\n')
-		file.close()
 
 
 
@@ -155,55 +200,58 @@ if __name__ == "__main__":
 
 
 
+
+	##====================================================================================================================
+	#plot per factor genes (colored by chrs)
+	##====================================================================================================================
 	'''
-	#plot per factor genes
 	list_num_gene = np.load("./result/list_num_gene.npy")
 
-	k = 0																## TODO: change this
-	beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
-	print beta_cellfactor2_sub.shape
-	print np.amax(beta_cellfactor2_sub)
-	print np.amin(beta_cellfactor2_sub)
+	K = 28
+	for k in range(K):
+		print "@@@", k
+	#	k = 1																## TODO: change this
+		beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
+		print beta_cellfactor2_sub.shape
+		print np.amax(beta_cellfactor2_sub)
+		print np.amin(beta_cellfactor2_sub)
 
+		## folder check
+		directory = "/Users/shuoyang/Desktop/gene_factors/figs_genebeta_k" + str(k) + "/"
+		if not os.path.exists(directory):
+			os.makedirs(directory)
 
-	for d in range(len(beta_cellfactor2_sub)):
-		print d
+		for d in range(len(beta_cellfactor2_sub)):
+			print d
 
-		beta = beta_cellfactor2_sub[d]
-		print beta.shape
+			beta = beta_cellfactor2_sub[d]
+			print beta.shape
+			print np.amax(beta)
+			print np.amin(beta)
 
-		#beta_sort = np.sort(beta)
-		#amount = 2000
-		#beta = beta_sort[:amount] + beta_sort[-amount:]
+			#plt.plot(beta, 'ro', alpha=0.5)
+			#plt.axis([0, len(beta), -50, 50])
 
-		print np.amax(beta)
-		print np.amin(beta)
+			fig = plt.figure()
+			start = 0
+			for i in range(22):
+				num = list_num_gene[i]
+				color = list_chr_color[i]
+				plt.plot(np.arange(start, start+num), beta[start: start+num], 'o', color = color, markersize=4, alpha=0.5)
+				#ax.stem(np.arange(start, start+num), beta[start: start+num], 'o', color = color, alpha=0.5)
+				start += num
 
-		#plt.plot(beta, 'ro', alpha=0.5)
-		#plt.axis([0, len(beta), -50, 50])
+			plt.axis([0, len(beta), -50, 50])				# NOTE: manually test the range of the veta values
+			plt.grid(True)
+			plt.title("factor#" + str(d))
+			plt.xlabel("gene index")
+			plt.ylabel("beta of genes")
 
-
-		fig = plt.figure()
-		start = 0
-		for i in range(22):
-			num = list_num_gene[i]
-			color = list_chr_color[i]
-			plt.plot(np.arange(start, start+num), beta[start: start+num], 'o', color = color, markersize=4, alpha=0.5)
-			#ax.stem(np.arange(start, start+num), beta[start: start+num], 'o', color = color, alpha=0.5)
-			start += num
-
-		#for i in range(len(beta)):
-		#	plt.plot(i, beta[i], 'ro')
-
-		plt.axis([0, len(beta), -50, 50])				# NOTE: manually test the range of the veta values
-		plt.grid(True)
-		plt.title("factor#" + str(d))
-		plt.xlabel("gene index")
-		plt.ylabel("beta of genes")
-		plt.savefig("/Users/shuoyang/Desktop/figs_genebeta_k" + str(k) + "/d" + str(d) + ".png")
-		#plt.show()
-		plt.close(fig)
+			plt.savefig(directory + "d" + str(d) + ".png")
+			#plt.show()
+			plt.close(fig)
 	'''
+
 
 
 

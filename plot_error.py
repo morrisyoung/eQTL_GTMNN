@@ -12,6 +12,27 @@ list_tissue = ['tissue#0', 'tissue#1', 'tissue#2', 'tissue#3', 'tissue#4', 'tiss
 
 
 
+
+def load_array_txt(filename):
+
+	array = []
+	file = open(filename, 'r')
+	while 1:
+		line = (file.readline()).strip()
+		if not line:
+			break
+
+		value = float(line)
+		array.append(value)
+	file.close()
+	array = np.array(array)
+
+	return array
+
+
+
+
+
 if __name__=="__main__":
 
 
@@ -55,6 +76,8 @@ if __name__=="__main__":
 
 	## NOTE: plot double legend
 	#x = np.arange(0, 201, 1)
+	#y1 = load_array_txt("./result/error_total_online.txt")
+	#y2 = load_array_txt("./result/error_total_online_test.txt")
 	y1 = np.load("./result/list_error.npy")
 	y2 = np.load("./result/list_error_test.npy")
 	x = np.arange(0, len(y1), 1)
@@ -63,9 +86,22 @@ if __name__=="__main__":
 
 	#ax2 = ax1.twinx()
 
+
+	## TEST
+	print y1
+	print y2
+
+
 	## scale to variance portion
 	y1 = 1 - y1 / 82944750.0					# amount: (4270, 19425)
 	y2 = 1 - y2 / 26776502.0985					# amount: (1424, 19425)
+
+
+	## TEST
+	print "training VE first and last:", y1[0], y1[-1]
+	print "testing VE first and last:", y2[0], y2[-1]
+
+
 
 	ax1.plot(x, y1, 'b-')
 	ax1.plot(x, y2, 'g-')
@@ -79,6 +115,8 @@ if __name__=="__main__":
 	red_line = mlines.Line2D([], [], color='g', markersize=15, label='testing set')
 	plt.legend(handles=[blue_line, red_line], loc = 4)
 
+
+	#plt.axis([0, len(y1), 0, 1])
 	plt.grid(True)
 	plt.title("variance explained by the model v.s. learning updates")
 	plt.show()

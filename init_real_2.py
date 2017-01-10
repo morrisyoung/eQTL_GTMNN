@@ -44,6 +44,7 @@ init_beta_cellfactor1 = []		# matrix of first layer cell factor beta
 
 
 
+
 if __name__ == "__main__":
 
 
@@ -57,12 +58,10 @@ if __name__ == "__main__":
 	##=====================================================================================================================
 	#
 	#X = np.load("./data_train/X.npy")
-	## DEBUG
 	X = np.load("../preprocess/data_train/X.npy")
 	#
-	#F = np.load("./data_temp/F.npy")
-	## DEBUG
-	F = np.load("../preprocess/data_temp/F.npy")
+	F = np.load("./data_temp/F.npy")
+	#F = np.load("../preprocess/data_temp/F.npy")
 
 	##==== fill dimension
 	I = len(X[0])
@@ -82,7 +81,6 @@ if __name__ == "__main__":
 
 
 
-	"""
 	##
 	##
 	## for each factor: pick up candidate SNPs, do the LASSO
@@ -130,7 +128,9 @@ if __name__ == "__main__":
 
 
 	print "done..."
-	"""
+
+
+
 
 
 
@@ -141,6 +141,7 @@ if __name__ == "__main__":
 
 
 	#### DEBUG
+	'''
 	####========================================================================
 	m_indi_snp = np.load("../preprocess/data_temp/m_indi_snp.npy")
 
@@ -160,8 +161,7 @@ if __name__ == "__main__":
 
 	print d, np.sum(m_indi_snp[d]), np.sum(np.sign(np.square(beta)))
 	####========================================================================
-
-
+	'''
 
 
 

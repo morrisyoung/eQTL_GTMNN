@@ -12,10 +12,16 @@ list_chr_color = ['k', '#988ED5', 'm', '#8172B2', '#348ABD', '#EEEEEE', '#FF9F9A
 
 
 
+
 if __name__ == "__main__":
 
 
 
+
+
+	##====================================================================================================================
+	## pre-processing
+	##====================================================================================================================
 	##====
 	#beta_cellfactor1 = np.load("./result/beta_cellfactor1.npy")
 	#for d in range(len(beta_cellfactor1)):
@@ -39,6 +45,63 @@ if __name__ == "__main__":
 	'''
 
 
+
+
+
+
+	##====================================================================================================================
+	## pre-process and load the snp lists
+	##====================================================================================================================
+	# list_snp_info = np.load("./result/list_snp_info.npy")
+	# print "there are # of SNPs:", len(list_snp_info)
+	# list_snp = list_snp_info[:, 0]
+	# # extract the mapping
+	# repo_snp_1 = {}
+	# repo_snp_2 = {}
+	# file = open("./result/GTEx_Analysis_2015-01-12_OMNI_2.5M_5M_450Indiv_chr1to22_genot_imput_info04_maf01_HWEp1E6_VarID_Lookup_Table.txt", 'r')
+	# file.readline()
+	# while 1:
+	# 	line = (file.readline()).strip()
+	# 	if not line:
+	# 		break
+
+	# 	line = line.split('\t')
+	# 	snp = line[2]
+	# 	id1 = line[5]
+	# 	id2 = line[6]
+	# 	repo_snp_1[snp] = id1
+	# 	repo_snp_2[snp] = id2
+	# file.close()
+	# # build the new lists
+	# list_snp_1 = []
+	# list_snp_2 = []
+	# for snp in list_snp:
+	# 	id1 = repo_snp_1[snp]
+	# 	id2 = repo_snp_2[snp]
+	# 	list_snp_1.append(id1)
+	# 	list_snp_2.append(id2)
+	# list_snp_1 = np.array(list_snp_1)
+	# list_snp_2 = np.array(list_snp_2)
+	# np.save("./result/list_snp", list_snp)
+	# np.save("./result/list_snp_dbSNP135", list_snp_1)
+	# np.save("./result/list_snp_dbSNP142_CHG37p13", list_snp_2)
+	# print "done..."
+	##
+	list_snp_1 = np.load("./result/list_snp_dbSNP135.npy")
+	list_snp_2 = np.load("./result/list_snp_dbSNP142_CHG37p13.npy")
+
+
+
+
+
+
+
+
+
+	##====================================================================================================================
+	## plot each factor, colored by chrs
+	##====================================================================================================================
+	'''
 	##====
 	list_num_snp = np.load("./result/list_num_snp.npy")
 
@@ -72,6 +135,40 @@ if __name__ == "__main__":
 		plt.savefig("/Users/shuoyang/Desktop/figs_snpbeta/d" + str(d) + ".png")
 		#plt.show()
 		plt.close(fig)
+	'''
+
+
+
+
+
+
+
+
+
+
+	##====================================================================================================================
+	## test learning strength
+	##====================================================================================================================
+	## init
+	beta_cellfactor1_init = np.load("./result/beta_cellfactor1_init.npy")
+	#for d in range(len(beta_cellfactor1_init)):
+	for d in [0]:
+		list_init = beta_cellfactor1_init[d]
+		list_learn = np.load("./result_temp/beta_d" + str(d) + '.npy')
+		list_diff = list_learn - list_init
+
+		plt.plot(list_init, list_diff, 'ro', alpha=0.5)
+		#list = np.arange(-0.05, 0.25, 0.001)
+		#plt.plot(list, list, 'b-', alpha=0.5)
+		plt.grid()
+		plt.show()
+
+
+
+
+
+
+
 
 
 

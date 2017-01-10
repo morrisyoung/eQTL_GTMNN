@@ -77,6 +77,13 @@ list_sample = []
 
 
 
+## cis- pre-calculated components
+Y_cis_train = []
+repo_Y_cis_train = {}
+Y_cis_test = []
+
+
+
 
 
 
@@ -102,6 +109,9 @@ def forward_backward_gd():
 	global rate_learn
 
 	global list_sample
+
+	global Y_cis_train
+	global Y_cis_test
 
 
 
@@ -130,7 +140,7 @@ def forward_backward_gd():
 
 	# re-organize the samples in this mini-batch into tissues
 	Y_batch = []
-	Y_pos_bacth = []
+	Y_pos_batch = []
 	list_tissue_batch = []
 	rep_tissue = {}
 	for sample in list_sample_batch:
@@ -142,26 +152,26 @@ def forward_backward_gd():
 
 		if tissue in rep_tissue:
 			Y_batch[rep_tissue[tissue]].append(sample_expr)
-			Y_pos_bacth[rep_tissue[tissue]].append(pos_individual)
+			Y_pos_batch[rep_tissue[tissue]].append(pos_individual)
 		else:
 			Y_batch.append([sample_expr])
-			Y_pos_bacth.append([pos_individual])
+			Y_pos_batch.append([pos_individual])
 
 			rep_tissue[tissue] = len(Y_batch) - 1			# index in the new incomp tensor
 			list_tissue_batch.append(tissue)
 
 	for i in range(len(Y_batch)):
 		Y_batch[i] = np.array(Y_batch[i])
-		Y_pos_bacth[i] = np.array(Y_pos_bacth[i])
+		Y_pos_batch[i] = np.array(Y_pos_batch[i])
 	Y_batch = np.array(Y_batch)
-	Y_pos_bacth = np.array(Y_pos_bacth)
+	Y_pos_batch = np.array(Y_pos_batch)
 	list_tissue_batch = np.array(list_tissue_batch)
 
 
 
 	## several key components to be used later on:
 	#Y_batch = []
-	#Y_pos_bacth = []
+	#Y_pos_batch = []
 	#list_tissue_batch = []
 	## please avoid re-naming
 
@@ -190,20 +200,51 @@ def forward_backward_gd():
 	Y_cellfactor_batch = []
 	for i in range(len(list_tissue_batch)):
 		k = list_tissue_batch[i]
-		size_batch = len(Y_pos_bacth[i])
+		size_batch = len(Y_pos_batch[i])
 		#
 		Y_cellfactor = []
 		beta_cellfactor2_reshape = beta_cellfactor2[k].T 										# (D+1) x J
-		Y_cellfactor = np.dot(m_factor_new[Y_pos_bacth[i]], beta_cellfactor2_reshape)			# size_batch x J
+		Y_cellfactor = np.dot(m_factor_new[Y_pos_batch[i]], beta_cellfactor2_reshape)			# size_batch x J
 		Y_cellfactor_batch.append(Y_cellfactor)
 	Y_cellfactor_batch = np.array(Y_cellfactor_batch)
+
+
+
+	##
+	##
+	## NOTE: extract out the cis- component
+	##
+	Y_cis_batch = []
+	for i in range(len(list_tissue_batch)):
+		k = list_tissue_batch[i]
+
+		Y_cis_batch.append([])
+		for pos_indiv in Y_pos_batch[i]:
+			id = str(k) + '-' + str(pos_indiv)
+			expr = repo_Y_cis_train[id]
+			Y_cis_batch[i].append(expr)
+
+		Y_cis_batch[i] = np.array(Y_cis_batch[i])
+	Y_cis_batch = np.array(Y_cis_batch)
+	##
+	##
+	##
+	##
+
+
 
 
 	##=============
 	## compile and error cal
 	##=============
-	Y_final_batch = Y_cellfactor_batch
+	Y_final_batch = Y_cellfactor_batch + Y_cis_batch
 	Tensor_error_batch = Y_final_batch - Y_batch
+
+
+
+
+
+
 
 
 
@@ -221,7 +262,7 @@ def forward_backward_gd():
 	for i in range(len(list_tissue_batch)):
 		k = list_tissue_batch[i]
 		der_cellfactor2[k] = np.zeros(beta_cellfactor2[k].shape)			# J x (D+1)
-		m_factor_new_sub = m_factor_new[Y_pos_bacth[i]]
+		m_factor_new_sub = m_factor_new[Y_pos_batch[i]]
 		# J x N, N x (D+1)
 		der_cellfactor2[k] = np.dot(Tensor_error_batch[i].T, m_factor_new_sub)
 		der_cellfactor2[k] = der_cellfactor2[k] / N_sample
@@ -236,9 +277,9 @@ def forward_backward_gd():
 		# N x D
 		#m_factor_der = np.multiply(m_factor_after, 1 - m_factor_after)
 		# N x D, N x D --> N x D
-		m_temp = np.multiply(m_temp, m_factor_der[Y_pos_bacth[i]])
+		m_temp = np.multiply(m_temp, m_factor_der[Y_pos_batch[i]])
 		# D x N, N x (I+1)
-		der_cellfactor1 += np.dot(m_temp.T, X[Y_pos_bacth[i]])				# NOTE: this is too large for GPU --> we do the m_temp first, and then do Beta part by part
+		der_cellfactor1 += np.dot(m_temp.T, X[Y_pos_batch[i]])				# NOTE: this is too large for GPU --> we do the m_temp first, and then do Beta part by part
 	der_cellfactor1 = der_cellfactor1 / N_sample
 
 
@@ -273,11 +314,13 @@ def forward_backward_gd():
 
 
 
+
 ##==== calculate the total squared error for all tissues
 def cal_error():
 	global X, Y, Y_pos
 	global beta_cellfactor1, beta_cellfactor2
 	global I, J, K, D, N
+	global Y_cis_train
 
 	error_total = 0
 
@@ -310,7 +353,19 @@ def cal_error():
 		Y_final = Y_cellfactor
 		list_pos = Y_pos[k]
 		Y_final_sub = Y_final[list_pos]
-		error = np.sum(np.square(Y[k] - Y_final_sub))
+		#error = np.sum(np.square(Y[k] - Y_final_sub))
+
+		##
+		##
+		##
+		##
+		Y_cis_sub = Y_cis_train[k]
+		error = np.sum(np.square(Y[k] - Y_cis_sub - Y_final_sub))
+		##
+		##
+		##
+		##
+
 
 		##=============
 		##=============
@@ -323,10 +378,12 @@ def cal_error():
 
 
 
+
 def cal_error_test():
 	global X_test, Y_test, Y_pos_test
 	global beta_cellfactor1, beta_cellfactor2
 	global I, J, K, D
+	global Y_cis_test
 
 
 	## make this N local
@@ -367,7 +424,18 @@ def cal_error_test():
 		Y_final = Y_cellfactor
 		list_pos = Y_pos[k]
 		Y_final_sub = Y_final[list_pos]
-		error = np.sum(np.square(Y[k] - Y_final_sub))
+		#error = np.sum(np.square(Y[k] - Y_final_sub))
+
+		##
+		##
+		##
+		##
+		Y_cis_sub = Y_cis_test[k]
+		error = np.sum(np.square(Y[k] - Y_cis_sub - Y_final_sub))
+		##
+		##
+		##
+		##
 
 		##=============
 		##=============
@@ -382,10 +450,16 @@ def cal_error_test():
 
 
 
+
+
+
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
 ##=============/=============/=============/=============/=============/=============/=============/=============
+
+
+
 
 
 
@@ -432,7 +506,8 @@ if __name__ == "__main__":
 
 	##
 	#fileheader = "../workbench1/data_simu_init/"
-	fileheader = "../preprocess/data_real_init/"
+	#fileheader = "../preprocess/data_real_init/"
+	fileheader = "./data_real_init/"
 	#
 	beta_cellfactor1 = np.load(fileheader + "beta_cellfactor1.npy")
 	beta_cellfactor2 = np.load(fileheader + "beta_cellfactor2.npy")
@@ -479,6 +554,28 @@ if __name__ == "__main__":
 	N_test = len(X_test)
 	array_ones = (np.array([np.ones(N_test)])).T
 	X_test = np.concatenate((X_test, array_ones), axis=1)						# N x (I+1)
+
+
+
+
+
+
+
+
+	##==============================================
+	## cis- pre-calculated components
+	##==============================================
+	Y_cis_train = np.load("../workbench54/data_real_init/Y_cis_train.npy")
+	Y_cis_test = np.load("../workbench54/data_real_init/Y_cis_test.npy")
+	#repo_Y_cis_train
+	for k in range(len(Y_pos)):
+		for i in range(len(Y_pos[k])):
+			pos_indiv = Y_pos[k][i]
+			id = str(k) + '-' + str(pos_indiv)
+			repo_Y_cis_train[id] = Y_cis_train[k][i]
+
+
+
 
 
 
@@ -560,7 +657,6 @@ if __name__ == "__main__":
 
 
 
-		'''
 		if iter1 == 0:
 			## error before
 			##============================================
@@ -576,7 +672,6 @@ if __name__ == "__main__":
 
 
 		forward_backward_gd()
-		'''
 
 
 
@@ -587,12 +682,10 @@ if __name__ == "__main__":
 		list_error.append(error)
 		np.save("./result/list_error", np.array(list_error))
 
-		'''
 		error = cal_error_test()
 		print "[error_after] current total error (test):", error
 		list_error_test.append(error)
 		np.save("./result/list_error_test", np.array(list_error_test))
-		'''
 		##============================================
 
 

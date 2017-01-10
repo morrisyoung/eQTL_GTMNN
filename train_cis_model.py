@@ -12,10 +12,23 @@
 
 
 
+## NOTE: Jan.7, 2017:
+##	1. there might be a type error that's not yet resolved, but since this script is too slow and won't be used anymore
+
+
+
+
+
+
+
+
+
+
 import numpy as np
 import math
 import timeit
 import sys
+
 
 
 
@@ -134,7 +147,7 @@ def forward_backward_gd():
 
 	# re-organize the samples in this mini-batch into tissues
 	Y_batch = []
-	Y_pos_bacth = []
+	Y_pos_batch = []
 	list_tissue_batch = []
 	rep_tissue = {}
 	for sample in list_sample_batch:
@@ -146,26 +159,26 @@ def forward_backward_gd():
 
 		if tissue in rep_tissue:
 			Y_batch[rep_tissue[tissue]].append(sample_expr)
-			Y_pos_bacth[rep_tissue[tissue]].append(pos_individual)
+			Y_pos_batch[rep_tissue[tissue]].append(pos_individual)
 		else:
 			Y_batch.append([sample_expr])
-			Y_pos_bacth.append([pos_individual])
+			Y_pos_batch.append([pos_individual])
 
 			rep_tissue[tissue] = len(Y_batch) - 1			# index in the new incomp tensor
 			list_tissue_batch.append(tissue)
 
 	for i in range(len(Y_batch)):
 		Y_batch[i] = np.array(Y_batch[i])
-		Y_pos_bacth[i] = np.array(Y_pos_bacth[i])
+		Y_pos_batch[i] = np.array(Y_pos_batch[i])
 	Y_batch = np.array(Y_batch)
-	Y_pos_bacth = np.array(Y_pos_bacth)
+	Y_pos_batch = np.array(Y_pos_batch)
 	list_tissue_batch = np.array(list_tissue_batch)
 
 
 
 	## several key components to be used later on:
 	#Y_batch = []
-	#Y_pos_bacth = []
+	#Y_pos_batch = []
 	#list_tissue_batch = []
 	## please avoid re-naming
 
@@ -185,7 +198,7 @@ def forward_backward_gd():
 	for i in range(len(list_tissue_batch)):
 		k = list_tissue_batch[i]
 		#
-		size_batch = len(Y_pos_bacth[i])
+		size_batch = len(Y_pos_batch[i])
 		#
 		Y_cis = []
 		for j in range(J):
@@ -197,8 +210,8 @@ def forward_backward_gd():
 				temp = np.zeros(size_batch) + beta_cis[k][j][0]
 				Y_cis.append(temp)
 			else:
-				#X_sub = X[Y_pos_bacth[i], start:end+1]
-				X_sub = X[Y_pos_bacth[i]]
+				#X_sub = X[Y_pos_batch[i], start:end+1]
+				X_sub = X[Y_pos_batch[i]]
 				X_sub = X_sub[:, start:end+1]
 				array_ones = (np.array([np.ones(size_batch)])).T
 				X_sub = np.concatenate((X_sub, array_ones), axis=1)						# size_batch x (amount+1)
@@ -243,7 +256,7 @@ def forward_backward_gd():
 			der_cis[k][j] = np.zeros(der_cis[k][j].shape)
 			#start = mapping_cis[j][0]
 			#end = mapping_cis[j][1]
-			X_sub = X[Y_pos_bacth[i]]
+			X_sub = X[Y_pos_batch[i]]
 			X_sub = X_sub[:, start:end+1]
 			array_ones = (np.array([np.ones(len(X_sub))])).T
 			X_sub = np.concatenate((X_sub, array_ones), axis=1)						# N x (amount+1)

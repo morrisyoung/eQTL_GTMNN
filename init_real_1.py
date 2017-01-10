@@ -62,18 +62,34 @@ if __name__ == "__main__":
 	##==== load data (simu, incomp tensor)
 	##=====================================================================================================================
 	#
-	X = np.load("./data_train/X.npy")
+	X = np.load("../preprocess/data_train/X.npy")
 	# Y and Y_pos
 	K = 28										## TODO: specify the number of tissues
 	Y = []
 	Y_pos = []
 	for k in range(K):
-		data = np.load("./data_train/Tensor_tissue_" + str(k) + ".npy")
-		list_pos = np.load("./data_train/Tensor_tissue_" + str(k) + "_pos.npy")
+		data = np.load("../preprocess/data_train/Tensor_tissue_" + str(k) + ".npy")
+		list_pos = np.load("../preprocess/data_train/Tensor_tissue_" + str(k) + "_pos.npy")
 		Y.append(data)
 		Y_pos.append(list_pos)
 	Y = np.array(Y)
 	Y_pos = np.array(Y_pos)
+
+
+
+	##
+	##
+	##
+	##
+	## NOTE: take the residuals
+	Y_cis_train = np.load("../workbench54/data_real_init/Y_cis_train.npy")
+	Y = Y - Y_cis_train
+	##
+	##
+	##
+	##
+
+
 
 	##==== fill dimension
 	I = len(X[0])
@@ -286,7 +302,7 @@ if __name__ == "__main__":
 	np.save("./data_temp/m_indi", m_indi)
 	## check and save effective SNPs for each factor
 	print "output num of active genes and num of corresponding snps in each factor:"
-	mapping_cis = np.load("./data_train/mapping_cis.npy")
+	mapping_cis = np.load("../preprocess/data_train/mapping_cis.npy")
 	m_indi_snp = []
 	for d in range(D):
 		indi_snp = np.zeros(I)
@@ -307,7 +323,6 @@ if __name__ == "__main__":
 
 	##
 	print "done..."
-
 
 
 

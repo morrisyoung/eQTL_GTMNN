@@ -21,6 +21,7 @@ list_chr_color = ['k', '#988ED5', 'm', '#8172B2', '#348ABD', '#EEEEEE', '#FF9F9A
 
 
 
+
 if __name__ == "__main__":
 
 
@@ -80,6 +81,8 @@ if __name__ == "__main__":
 
 
 
+
+
 	"""
 	##====================================================================================================================
 	#''' plot the factor matrix
@@ -128,6 +131,7 @@ if __name__ == "__main__":
 	##per factor sorted genes
 	## to save results
 	##====================================================================================================================
+	'''
 	K = 28
 	for k in range(K):
 		print "tissue #", k
@@ -156,19 +160,19 @@ if __name__ == "__main__":
 			#beta = beta[-200:]
 			#beta = beta[::-1]
 
-			'''
-			fig = plt.figure()
-			plt.plot(beta, 'ro', alpha=0.5)
 
-			#plt.axis([0, len(beta), -50, 50])				# NOTE: manually test the range of the veta values
-			plt.grid(True)
-			plt.title("factor#" + str(d))
-			plt.xlabel("gene index (sorted)")
-			plt.ylabel("beta of genes")
+			# fig = plt.figure()
+			# plt.plot(beta, 'ro', alpha=0.5)
 
-			plt.show()
-			plt.close(fig)
-			'''
+			# #plt.axis([0, len(beta), -50, 50])				# NOTE: manually test the range of the veta values
+			# plt.grid(True)
+			# plt.title("factor#" + str(d))
+			# plt.xlabel("gene index (sorted)")
+			# plt.ylabel("beta of genes")
+
+			# plt.show()
+			# plt.close(fig)
+
 
 			#list_gene_sub = list_gene_name[beta_arg[:200]]
 			# list_gene_sub = list_gene_name[beta_arg]
@@ -190,6 +194,47 @@ if __name__ == "__main__":
 
 
 		#break
+	'''
+
+
+
+
+
+
+
+	##====================================================================================================================
+	# change before and after learn
+	##====================================================================================================================
+	k = 16
+	beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
+	print beta_cellfactor2_sub.shape, len(beta_cellfactor2_sub)*len(beta_cellfactor2_sub[0])
+	list_all = []
+	for i in range(len(beta_cellfactor2_sub)):
+		list_all += beta_cellfactor2_sub[i].tolist()
+	list_all = np.array(list_all)
+
+	##
+	beta_cellfactor2_init = np.load("./result/beta_cellfactor2_init.npy")
+	beta_cellfactor2_init_sub = beta_cellfactor2_init[k].T
+	beta_cellfactor2_init_sub = beta_cellfactor2_init_sub[:400]
+	list_init = []
+	for i in range(len(beta_cellfactor2_init_sub)):
+		list_init += beta_cellfactor2_init_sub[i].tolist()
+	list_init = np.array(list_init)
+	print len(list_init)
+	list_learn = list_all
+	list_diff = list_learn - list_init
+
+	plt.plot(list_init, list_diff, 'ro', alpha=0.5)
+	#list = np.arange(-0.05, 0.25, 0.001)
+	#plt.plot(list, list, 'b-', alpha=0.5)
+	plt.grid()
+	plt.xlabel("beta of init")
+	plt.ylabel("beta of learned - beta of init")
+	plt.title("k=" + str(k))
+	plt.show()
+
+
 
 
 

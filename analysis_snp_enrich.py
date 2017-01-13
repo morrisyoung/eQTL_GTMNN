@@ -14,6 +14,7 @@ import sys
 
 
 
+
 list_chr_color = ['k', '#988ED5', 'm', '#8172B2', '#348ABD', '#EEEEEE', '#FF9F9A', '#56B4E9', '#8C0900', '#6d904f', 'cyan', 'red', 'g', '#C4AD66', '#6ACC65', 'gray', '#F0E442', '#017517', '#B0E0E6', '#eeeeee', '#55A868', '0.70']
 
 
@@ -64,8 +65,12 @@ def cal_enrich(list_gene, list_gene_beta, geneset):
 		ES = sum / Nr - count_null * delta
 		list_ES.append(ES)
 	list_ES = np.array(list_ES)
+
 	##
-	score = np.amax(list_ES)
+	#score = np.amax(list_ES)
+	list_ES_abs = np.absolute(list_ES)
+	pos = np.argmax(list_ES_abs)
+	score = list_ES[pos]
 
 	#print "ES max:", np.amax(list_ES)
 	#print "ES min:", np.amin(list_ES)
@@ -113,17 +118,37 @@ def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_set
 			result[pos].append(ES)
 	result = np.array(result)
 
-	##
+	# ##
+	# list_p = []
+	# for i in range(len(list_set)):
+	# 	score = list_score[i]
+	# 	count = 0
+	# 	for j in range(len(result[i])):
+	# 		if result[i][j] >= score:
+	# 			count += 1
+	# 	pvalue = float(count) / nump
+	# 	list_p.append(pvalue)
+	# list_p = np.array(list_p)
+	## check hit for two directions
 	list_p = []
 	for i in range(len(list_set)):
 		score = list_score[i]
-		count = 0
-		for j in range(len(result[i])):
-			if result[i][j] >= score:
-				count += 1
-		pvalue = float(count) / nump
-		list_p.append(pvalue)
+		if score >= 0:
+			count = 0
+			for j in range(len(result[i])):
+				if result[i][j] >= score:
+					count += 1
+			pvalue = float(count) / nump
+			list_p.append(pvalue)
+		else:
+			count = 0
+			for j in range(len(result[i])):
+				if result[i][j] <= score:
+					count += 1
+			pvalue = float(count) / nump
+			list_p.append(pvalue)
 	list_p = np.array(list_p)
+
 
 	return list_p
 
@@ -150,6 +175,7 @@ if __name__ == "__main__":
 	##==== get the training rate
 	task_index = int(sys.argv[1])
 	#D = task_index - 1
+	#task_index = 1
 
 
 
@@ -282,15 +308,6 @@ if __name__ == "__main__":
 	print "the universal of SNPs to analyse has size:",
 	print len(repo_universal)
 
-	##
-	count = 0
-	for snp in repo_snp_phenotype:
-		if snp in repo_universal:
-			count += 1
-			print snp, repo_snp_phenotype[snp]
-	print "and there are # of SNPs reported to have associations:",
-	print count
-
 	## remove the issue SNPs from the repo_universal (for now, duplicated SNPs in the GTEx, due to name transform)
 	repo1 = {}
 	repo2 = {}									## NOTE: marker repo
@@ -304,6 +321,15 @@ if __name__ == "__main__":
 			del repo_universal[snp]
 	print "the universal of SNPs to analyse has size (after pruning duplicates):",
 	print len(repo_universal)
+
+	##
+	count = 0
+	for snp in repo_snp_phenotype:
+		if snp in repo_universal:
+			count += 1
+			print snp, repo_snp_phenotype[snp]
+	print "and there are # of SNPs reported to have associations:",
+	print count
 
 	## re-build: repo_sets
 	threshold = 1
@@ -357,9 +383,9 @@ if __name__ == "__main__":
 	list_snp_final = np.array(list_snp_final)
 	list_beta_final = np.array(list_beta_final)
 
-	##==== sort by abs beta
-	list_beta_abs = np.absolute(list_beta_final)
-	list_arg = np.argsort(list_beta_abs)
+	##==== sort by abs beta --> !! WRONG, should be sorted by value
+	#list_beta_abs = np.absolute(list_beta_final)
+	list_arg = np.argsort(list_beta_final)
 	list_arg = list_arg[::-1]				# reverse
 	list_beta_sort = list_beta_final[list_arg]
 	list_snp_sort = list_snp_final[list_arg]
@@ -369,12 +395,16 @@ if __name__ == "__main__":
 	# plt.plot(list_beta_sort)
 	# plt.show()
 
-	# for pos in range(len(list_snp_final)):
-	# 	snp = list_snp_final[pos]
+	# for pos in range(len(list_snp_sort)):
+	# 	snp = list_snp_sort[pos]
 	# 	if snp in repo_snp_phenotype:
 	# 		print pos,
 	# 		print snp,
 	# 		print repo_snp_phenotype[snp]
+
+	# ## DEBUG
+	# print list_snp_sort
+	# print list_beta_sort
 
 
 	##====
@@ -404,15 +434,19 @@ if __name__ == "__main__":
 	##
 	list_set = np.array(list_set)
 	list_score = np.array(list_score)
+	list_score_dir = np.sign(list_score)
+	list_score_abs = np.absolute(list_score)
 	#
-	list_arg = np.argsort(list_score)
+	list_arg = np.argsort(list_score_abs)
 	list_arg = list_arg[::-1]				# reverse
 	list_set = list_set[list_arg]
 	list_score = list_score[list_arg]
+	list_score_dir = list_score_dir[list_arg]
+	list_score_abs = list_score_abs[list_arg]
 	#
 
 	##==== permutation P value
-	nump = 10000
+	nump = 10000										## 10000 needs 0.4 hour
 	list_p = permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_sets, nump)
 	for i in range(len(list_score)):
 		print i, list_score[i], list_p[i]
@@ -426,6 +460,8 @@ if __name__ == "__main__":
 	##==== save
 	np.save("./result/enrich_set_d" + str(d), list_set)
 	np.save("./result/enrich_score_d" + str(d), list_score)
+	np.save("./result/enrich_score_dir_d" + str(d), list_score_dir)
+	np.save("./result/enrich_score_abs_d" + str(d), list_score_abs)
 	np.save("./result/enrich_p_d" + str(d), list_p)
 
 
@@ -433,13 +469,15 @@ if __name__ == "__main__":
 	file = open("./result/enrich_d" + str(d) + ".txt", 'w')
 	for i in range(len(list_set)):
 		set = list_set[i]
-		score = list_score[i]
+		#score = list_score[i]
+		score_dir = list_score_dir[i]
+		score_abs = list_score_abs[i]
 		p = list_p[i]
-		file.write(str(set) + '\t' + str(score) + '\t' + str(p) + '\n')
+		# file.write(str(set) + '\t' + str(score) + '\t' + str(p) + '\n')
+		#file.write(str(set) + '\t' + str(score) + '\n')
+		#file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\n')
+		file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\t' + str(p) + '\n')
 	file.close()
-
-
-
 
 
 

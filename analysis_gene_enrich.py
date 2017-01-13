@@ -14,6 +14,7 @@ import sys
 
 
 
+
 ## INPUT of this program:
 ##	1. gene sets not to say
 ##	2. list of genes with their beta (from one tissue and one factor)
@@ -21,6 +22,7 @@ import sys
 
 ## NOTES:
 ##	1. per file per tissue, per line per factor
+
 
 
 
@@ -112,6 +114,7 @@ def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_set
 	result = np.array(result)
 
 	##
+	## NOTES: save the count if necessary
 	list_p = []
 	for i in range(len(list_set)):
 		score = list_score[i]
@@ -134,34 +137,29 @@ def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_set
 
 
 
+
+
 if __name__ == "__main__":
 
 
 
+	##==== get the tissue # and factor #
+	task_index = int(sys.argv[1])
+	D = 20
+	index = task_index - 1
+	k = index / D
+	file = open("./list_tissues.txt", 'r')
+	list_tissues = []
+	while 1:
+		line = (file.readline()).strip()
+		if not line:
+			break
 
-
-
-	# D = 10
-	# index = task_index - 1
-	# # k = index / D
-	# file = open("./list_tissues.txt", 'r')
-	# list_tissues = []
-	# while 1:
-	# 	line = (file.readline()).strip()
-	# 	if not line:
-	# 		break
-
-	# 	tissue = int(line)
-	# 	list_tissues.append(tissue)
-	# file.close()
-	# k = list_tissues[k]
-	# d = index % D
-	# directory = "./result_k" + str(k)
-	# if not os.path.exists(directory):
-	# 	os.makedirs(directory)
-
-
-
+		tissue = int(line)
+		list_tissues.append(tissue)
+	file.close()
+	k = list_tissues[k]
+	d = index % D
 
 
 
@@ -171,9 +169,16 @@ if __name__ == "__main__":
 
 
 	##==== get the training rate
-	task_index = int(sys.argv[1])
-	k = int(sys.argv[2])
-	d = task_index - 1
+	# task_index = int(sys.argv[1])
+	# k = int(sys.argv[2])
+	# d = task_index - 1
+
+
+
+
+
+
+
 	sort_gene = np.load("../workbench7/result_temp/beta2_k" + str(k) + "_sort_gene.npy")
 	sort_beta = np.load("../workbench7/result_temp/beta2_k" + str(k) + "_sort_beta.npy")
 
@@ -236,7 +241,7 @@ if __name__ == "__main__":
 	##========================================================================================================================
 	#file = open("/Users/shuoyang/Downloads/msigdb.v5.2.symbols.gmt", 'r')
 	#file = open("/Users/shuoyang/Downloads/msigdb.v5.2.orig.gmt", 'r')				## NOTE: seems not correct
-	## the bwlow is for the cluster
+	## the below is for the cluster
 	file = open("../workbench7/result_temp/msigdb.v5.2.symbols.gmt", 'r')
 	repo_sets = {}
 	threshold = 15																	## NOTE: to tune
@@ -306,7 +311,8 @@ if __name__ == "__main__":
 
 
 	##==== permutation P value
-	nump = 200
+	## NOTES: to tune the sampling times
+	nump = 100
 	list_p = permute_test_p(list_gene_real, list_gene_beta_real, list_set, list_score, repo_sets, nump)
 	#for i in range(len(list_score)):
 	#	print i, list_score[i], list_p[i]
@@ -334,28 +340,30 @@ if __name__ == "__main__":
 
 
 
-	np.save("./result/enrich_set_d" + str(d), list_set)
-	np.save("./result/enrich_score_d" + str(d), list_score)
-	np.save("./result/enrich_p_d" + str(d), list_p)
+	# np.save("./result/enrich_set_d" + str(d), list_set)
+	# np.save("./result/enrich_score_d" + str(d), list_score)
+	# np.save("./result/enrich_p_d" + str(d), list_p)
 
 
-	# np.save("./result_k" + str(k) + "/enrich_set_d" + str(d), list_set)
-	# np.save("./result_k" + str(k) + "/enrich_score_d" + str(d), list_score)
-	# np.save("./result_k" + str(k) + "/enrich_p_d" + str(d), list_p)
+	np.save("./result/enrich_set_k" + str(k) + "_d" + str(d), list_set)
+	np.save("./result/enrich_score_k" + str(k) + "_d" + str(d), list_score)
+	np.save("./result/enrich_p_k" + str(k) + "_d" + str(d), list_p)
 
 
 
 	##========================================================================================================================
 	## reformat to .txt
 	##========================================================================================================================
-	file = open("./result/enrich_d" + str(d) + ".txt", 'w')
-	#file = open("./result_k" + str(k) + "/enrich_d" + str(d) + ".txt", 'w')
+	#file = open("./result/enrich_d" + str(d) + ".txt", 'w')
+	file = open("./result/enrich_k" + str(k) + "_d" + str(d) + ".txt", 'w')
 	for i in range(len(list_set)):
 		set = list_set[i]
 		score = list_score[i]
 		p = list_p[i]
 		file.write(str(set) + '\t' + str(score) + '\t' + str(p) + '\n')
 	file.close()
+
+
 
 
 

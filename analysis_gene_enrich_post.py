@@ -13,8 +13,11 @@ import sys
 
 
 
+## NOTES:
+##	combine factors for each tissue
+##	average all batches
 
-## NOTES: combine factors for each tissue
+
 
 
 
@@ -29,6 +32,14 @@ if __name__ == "__main__":
 	k = int(sys.argv[2])
 
 
+
+
+
+
+	##========================================================================================================================
+	## per tissue per file --> seems not good visually
+	##========================================================================================================================
+	'''
 	file = open("./result/enrich_k" + str(k) + ".txt", 'w')
 
 	for d in range(D):
@@ -47,6 +58,19 @@ if __name__ == "__main__":
 		file.write('\n')
 
 	file.close()
+	'''
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

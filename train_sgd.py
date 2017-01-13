@@ -507,7 +507,7 @@ if __name__ == "__main__":
 	##
 	#fileheader = "../workbench1/data_simu_init/"
 	#fileheader = "../preprocess/data_real_init/"
-	fileheader = "./data_real_init/"
+	fileheader = "../workbench6/data_real_init/"
 	#
 	beta_cellfactor1 = np.load(fileheader + "beta_cellfactor1.npy")
 	beta_cellfactor2 = np.load(fileheader + "beta_cellfactor2.npy")

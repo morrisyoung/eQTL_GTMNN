@@ -68,12 +68,10 @@ def cal_enrich(list_gene, list_gene_beta, geneset):
 
 	##
 	#score = np.amax(list_ES)
+	## NOTE: pos/neg score
 	list_ES_abs = np.absolute(list_ES)
 	pos = np.argmax(list_ES_abs)
 	score = list_ES[pos]
-
-	#print "ES max:", np.amax(list_ES)
-	#print "ES min:", np.amin(list_ES)
 
 	return score
 
@@ -87,21 +85,13 @@ def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_set
 	##
 	list_snp = list_snp_sort
 	list_beta = list_beta_sort
-	repo_beta = {}
-	for pos in range(len(list_snp)):
-		snp = list_snp[pos]
-		beta = list_beta[pos]
-		repo_beta[snp] = beta
 
-	##
+	##=====================================================================================================================
 	result = []													## matrix of permute ESs for all sets
 	for i in range(len(list_set)):
 		result.append([])
 	for i in range(nump):
 		np.random.shuffle(list_snp)
-		list_beta = []
-		for snp in list_snp:
-			list_beta.append(repo_beta[snp])
 
 		#list_snp
 		#list_beta
@@ -118,6 +108,7 @@ def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_set
 			result[pos].append(ES)
 	result = np.array(result)
 
+	##=====================================================================================================================
 	# ##
 	# list_p = []
 	# for i in range(len(list_set)):
@@ -173,31 +164,31 @@ if __name__ == "__main__":
 
 
 	##==== get the training rate
-	task_index = int(sys.argv[1])
+	#task_index = int(sys.argv[1])
 	#D = task_index - 1
-	#task_index = 1
+	task_index = 1
 
 
 
 
 
 	## load all SNPs with different types of IDs
-	#list_snp = np.load("./result/list_snp.npy")
-	#list_snp_1 = np.load("./result/list_snp_dbSNP135.npy")
-	#list_snp_2 = np.load("./result/list_snp_dbSNP142_CHG37p13.npy")					## there are some duplicated SNPs
+	list_snp = np.load("./result/list_snp.npy")
+	list_snp_1 = np.load("./result/list_snp_dbSNP135.npy")
+	list_snp_2 = np.load("./result/list_snp_dbSNP142_CHG37p13.npy")					## there are some duplicated SNPs
 	## the below for cluster:
-	list_snp = np.load("./result_temp/list_snp.npy")
-	list_snp_1 = np.load("./result_temp/list_snp_dbSNP135.npy")
-	list_snp_2 = np.load("./result_temp/list_snp_dbSNP142_CHG37p13.npy")				## there are some duplicated SNPs
+	#list_snp = np.load("./result_temp/list_snp.npy")
+	#list_snp_1 = np.load("./result_temp/list_snp_dbSNP135.npy")
+	#list_snp_2 = np.load("./result_temp/list_snp_dbSNP142_CHG37p13.npy")				## there are some duplicated SNPs
 
 
 
 
 
 	##==== GWAS catalog
-	#file = open("/Users/shuoyang/Downloads/gwas_catalog_v1.0.1-associations_e87_r2017-01-09.tsv")
+	file = open("/Users/shuoyang/Downloads/gwas_catalog_v1.0.1-associations_e87_r2017-01-09.tsv")
 	## the below for cluster:
-	file = open("./result_temp/gwas_catalog_v1.0.1-associations_e87_r2017-01-09.tsv")
+	#file = open("./result_temp/gwas_catalog_v1.0.1-associations_e87_r2017-01-09.tsv")
 	file.readline()
 	repo_sets = {}
 	while 1:

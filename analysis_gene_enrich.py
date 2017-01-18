@@ -15,13 +15,12 @@ import sys
 
 
 
-## INPUT of this program:
-##	1. gene sets not to say
-##	2. list of genes with their beta (from one tissue and one factor)
+
 
 
 ## NOTES:
-##	1. per file per tissue, per line per factor
+##	1. per ID (per job) per tissue-factor
+##	2. cal the pos and neg enrichment
 
 
 
@@ -30,6 +29,13 @@ import sys
 
 
 
+
+
+
+
+## INPUT of this program:
+##	1. gene sets not to say
+##	2. list of sorted genes with their beta (from one tissue and one factor)
 ## I will code the weight factor as 1, as they did in PNAS paper
 def cal_enrich(list_gene, list_gene_beta, geneset):
 	score = 0
@@ -65,10 +71,11 @@ def cal_enrich(list_gene, list_gene_beta, geneset):
 		list_ES.append(ES)
 	list_ES = np.array(list_ES)
 	##
-	score = np.amax(list_ES)
-
-	#print "ES max:", np.amax(list_ES)
-	#print "ES min:", np.amin(list_ES)
+	# score = np.amax(list_ES)
+	## NOTE: pos/neg score
+	list_ES_abs = np.absolute(list_ES)
+	pos = np.argmax(list_ES_abs)
+	score = list_ES[pos]
 
 	return score
 
@@ -78,25 +85,18 @@ def cal_enrich(list_gene, list_gene_beta, geneset):
 
 
 
-def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_sets, nump):
+## permutation method: just permute the list of snp, and assume the shuffled list_snp has the same list_beta
+def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_sets, nump, k, d):
 	##
 	list_snp = list_snp_sort
 	list_beta = list_beta_sort
-	repo_beta = {}
-	for pos in range(len(list_snp)):
-		snp = list_snp[pos]
-		beta = list_beta[pos]
-		repo_beta[snp] = beta
 
-	##
+	##=========================================================================================================
 	result = []													## matrix of permute ESs for all sets
 	for i in range(len(list_set)):
 		result.append([])
 	for i in range(nump):
 		np.random.shuffle(list_snp)
-		list_beta = []
-		for snp in list_snp:
-			list_beta.append(repo_beta[snp])
 
 		#list_snp
 		#list_beta
@@ -107,26 +107,67 @@ def permute_test_p(list_snp_sort, list_beta_sort, list_set, list_score, repo_set
 
 			## do enrich
 			ES = cal_enrich(list_snp, list_beta, repo_sets[set])
-			if ES == 'nan':
-				ES = float('nan')
 
 			result[pos].append(ES)
 	result = np.array(result)
 
+	##=========================================================================================================
 	##
-	## NOTES: save the count if necessary
+	## NOTE: cal pos and neg P value
+	##
+	# list_p = []
+	# for i in range(len(list_set)):
+	# 	score = list_score[i]
+	# 	if score >= 0:
+	# 		count = 0
+	# 		for j in range(len(result[i])):
+	# 			if result[i][j] >= score:
+	# 				count += 1
+	# 		pvalue = float(count) / nump
+	# 		list_p.append(pvalue)
+	# 	else:
+	# 		count = 0
+	# 		for j in range(len(result[i])):
+	# 			if result[i][j] <= score:
+	# 				count += 1
+	# 		pvalue = float(count) / nump
+	# 		list_p.append(pvalue)
+	# list_p = np.array(list_p)
+
+
+	## Jan.16, 17: since there are too many 0 in the P value, we seek a better way to make only some of them stand out
+	np.save("./result/permute_k" + str(k) + "_d" + str(d), result)
+	# list_max = []
+	# list_min = []
+	# for j in range(len(result[0])):
+	# 	value_max = np.amax(result[:, j])
+	# 	list_max.append(value_max)
+	# 	value_min = np.amin(result[:, j])
+	# 	list_min.append(value_min)
+	##
+	'''
 	list_p = []
 	for i in range(len(list_set)):
+		set = list_set[i]
 		score = list_score[i]
-		count = 0
-		for j in range(len(result[i])):
-			if result[i][j] >= score:
-				count += 1
-		pvalue = float(count) / nump
-		list_p.append(pvalue)
+		if score >= 0:
+			count = 0
+			for j in range(len(list_max)):
+				if list_max[j] >= score:
+					count += 1
+			pvalue = float(count) / nump
+			list_p.append(pvalue)
+		else:
+			count = 0
+			for j in range(len(list_min)):
+				if list_min[j] <= score:
+					count += 1
+			pvalue = float(count) / nump
+			list_p.append(pvalue)
 	list_p = np.array(list_p)
+	'''
 
-	return list_p
+	return
 
 
 
@@ -143,7 +184,9 @@ if __name__ == "__main__":
 
 
 
-	##==== get the tissue # and factor #
+
+
+	##==== get the tissue # and factor # (k and d)
 	task_index = int(sys.argv[1])
 	D = 20
 	index = task_index - 1
@@ -166,6 +209,12 @@ if __name__ == "__main__":
 
 
 
+	# task_index = int(sys.argv[1])
+	# k = 6
+	# d = 2
+
+
+
 
 
 	##==== get the training rate
@@ -178,9 +227,12 @@ if __name__ == "__main__":
 
 
 
-
+	#sort_gene = np.load("./result_temp/beta2_k" + str(k) + "_sort_gene.npy")
+	#sort_beta = np.load("./result_temp/beta2_k" + str(k) + "_sort_beta.npy")
+	## the following is for the cluster:
 	sort_gene = np.load("../workbench7/result_temp/beta2_k" + str(k) + "_sort_gene.npy")
 	sort_beta = np.load("../workbench7/result_temp/beta2_k" + str(k) + "_sort_beta.npy")
+
 
 
 
@@ -196,10 +248,6 @@ if __name__ == "__main__":
 	list_gene = sort_gene[d]
 	list_gene_beta = sort_beta[d]
 
-
-
-	#list_gene = np.load("/Users/shuoyang/Desktop/temp/list_gene.npy")							## TODO
-	#list_gene_beta = np.load("/Users/shuoyang/Desktop/temp/list_gene_beta.npy")					## TODO
 	print "there are # of genes originally:", list_gene.shape
 	#
 	repo1 = {}
@@ -279,6 +327,9 @@ if __name__ == "__main__":
 
 
 
+
+
+
 	##========================================================================================================================
 	## enrichment analysis
 	##========================================================================================================================
@@ -302,21 +353,23 @@ if __name__ == "__main__":
 	##
 	list_set = np.array(list_set)
 	list_score = np.array(list_score)
+	list_score_dir = np.sign(list_score)
+	list_score_abs = np.absolute(list_score)
 	#
-	list_arg = np.argsort(list_score)
+	list_arg = np.argsort(list_score_abs)
 	list_arg = list_arg[::-1]				# reverse
 	list_set = list_set[list_arg]
 	list_score = list_score[list_arg]
-	#
+	list_score_dir = list_score_dir[list_arg]
+	list_score_abs = list_score_abs[list_arg]
+
 
 
 	##==== permutation P value
 	## NOTES: to tune the sampling times
-	nump = 100
-	list_p = permute_test_p(list_gene_real, list_gene_beta_real, list_set, list_score, repo_sets, nump)
-	#for i in range(len(list_score)):
-	#	print i, list_score[i], list_p[i]
-
+	nump = 200
+	#list_p = permute_test_p(list_gene_real, list_gene_beta_real, list_set, list_score, repo_sets, nump)
+	permute_test_p(list_gene_real, list_gene_beta_real, list_set, list_score, repo_sets, nump, k, d)
 
 
 	##==== timer
@@ -333,35 +386,46 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-
-
-	# np.save("./result/enrich_set_d" + str(d), list_set)
-	# np.save("./result/enrich_score_d" + str(d), list_score)
-	# np.save("./result/enrich_p_d" + str(d), list_p)
-
-
+	##========================================================================================================================
+	## save enrichment results
+	##========================================================================================================================
 	np.save("./result/enrich_set_k" + str(k) + "_d" + str(d), list_set)
 	np.save("./result/enrich_score_k" + str(k) + "_d" + str(d), list_score)
-	np.save("./result/enrich_p_k" + str(k) + "_d" + str(d), list_p)
+	#np.save("./result/enrich_dir_k" + str(k) + "_d" + str(d), list_score_dir)
+	#np.save("./result/enrich_abs_k" + str(k) + "_d" + str(d), list_score_abs)
+	#np.save("./result/enrich_p_k" + str(k) + "_d" + str(d), list_p)
+
+
+	## we process the P values in post-processing
+	# #### reformat to .txt
+	# #file = open("./result/enrich_d" + str(d) + ".txt", 'w')
+	# file = open("./result/enrich_k" + str(k) + "_d" + str(d) + ".txt", 'w')
+	# for i in range(len(list_set)):
+	# 	set = list_set[i]
+	# 	#score = list_score[i]
+	# 	score_dir = list_score_dir[i]
+	# 	score_abs = list_score_abs[i]
+	# 	p = list_p[i]
+	# 	#file.write(str(set) + '\t' + str(score) + '\t' + str(p) + '\n')
+	# 	#file.write(str(set) + '\t' + str(score) + '\n')
+	# 	#file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\n')
+	# 	file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\t' + str(p) + '\n')
+	# file.close()
 
 
 
-	##========================================================================================================================
-	## reformat to .txt
-	##========================================================================================================================
-	#file = open("./result/enrich_d" + str(d) + ".txt", 'w')
-	file = open("./result/enrich_k" + str(k) + "_d" + str(d) + ".txt", 'w')
-	for i in range(len(list_set)):
-		set = list_set[i]
-		score = list_score[i]
-		p = list_p[i]
-		file.write(str(set) + '\t' + str(score) + '\t' + str(p) + '\n')
-	file.close()
+
+	# ##========================================================================================================================
+	# ## save enrichment results (fix k and d)
+	# ##========================================================================================================================
+	# np.save("./result/enrich_set_id" + str(task_index), list_set)
+	# np.save("./result/enrich_score_id" + str(task_index), list_score)
+	#np.save("./result/enrich_dir_id" + str(task_index), list_score_dir)
+	#np.save("./result/enrich_abs_id" + str(task_index), list_score_abs)
+	#np.save("./result/enrich_p_id" + str(task_index), list_p)
+
+
+
 
 
 

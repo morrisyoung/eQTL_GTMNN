@@ -222,6 +222,7 @@ if __name__ == "__main__":
 	##====================================================================================================================
 	## analyze factors for different tissues (pick 20 factors), with GSEA web interface
 	##====================================================================================================================
+	'''
 	K = 28
 
 	##
@@ -240,10 +241,59 @@ if __name__ == "__main__":
 			value = np.average(Beta[k][d])
 			factor[k].append(value)
 	factor = np.array(factor)
-	factor = factor.T
+	#factor = factor.T
+	print factor.shape
 
-	##
-	for d in range(len(factor)):
+
+
+	# ## per tissue analysis
+	for k in range(len(factor)):
+		print k, list_tissues[k]
+
+		array = factor[k]
+		list_arg = np.argsort(array)
+		list_arg = list_arg[::-1]				# reverse
+
+		index1 = list_arg[0]
+		index2 = list_arg[1]
+		index3 = list_arg[2]
+
+		value1 = array[index1]
+		value2 = array[index2]
+		value3 = array[index3]
+
+		print index1, value1,
+		print index2, value2,
+		print index3, value3
+
+
+		## to output the top genes from representative tissue of this factor
+		d = index1
+		list_gene_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_gene.npy")
+		list_beta_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_beta.npy")
+
+		list_gene = list_gene_sort[d]
+		list_beta = list_beta_sort[d]
+		#print list_beta_sort[d]
+		#print list_gene_sort[d]
+		#print np.sum(np.sign(list_beta_sort[d]))
+
+		file = open("/Users/shuoyang/Desktop/temp_k_d/list_gene_k" + str(k) + "_d" + str(d) + ".txt", 'w')
+		for i in range(200):							## NOTE: we check only top 1000 genes
+			gene = list_gene[i]
+			file.write(gene + '\n')
+		file.close()
+	'''
+
+
+
+
+
+
+	## per factor analysis
+	#for d in range(len(factor)):
+	'''
+	for d in [8]:
 		print d,
 
 		array = factor[d]
@@ -268,6 +318,8 @@ if __name__ == "__main__":
 		print tissue3, value3
 
 
+
+
 		## to output the top genes from representative tissue of this factor
 		k = index1
 		list_gene_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_gene.npy")
@@ -284,6 +336,50 @@ if __name__ == "__main__":
 			gene = list_gene[i]
 			file.write(gene + '\n')
 		file.close()
+
+
+		# ### output top three
+		# for k in [index1, index2, index3]:
+		# 	list_gene_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_gene.npy")
+		# 	list_beta_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_beta.npy")
+		# 	list_gene = list_gene_sort[d]
+		# 	list_beta = list_beta_sort[d]
+
+		# 	file = open("/Users/shuoyang/Desktop/list_gene_d" + str(d) + "_k" + str(k) + ".txt", 'w')
+		# 	for i in range(200):							## NOTE: we check only top 1000 genes
+		# 		gene = list_gene[i]
+		# 		file.write(gene + '\n')
+		# 	file.close()
+	'''
+
+
+
+
+
+
+	## to output the top genes from representative tissue of this factor
+	k = 6
+	d = 1
+	list_gene_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_gene.npy")
+	list_beta_sort = np.load("./result_temp/beta2_k" + str(k) + "_sort_beta.npy")
+
+	list_gene = list_gene_sort[d]
+	list_beta = list_beta_sort[d]
+	print list_gene
+	print list_beta
+
+	#list_gene = list_gene[::-1]				# reverse
+	#list_beta = list_beta[::-1]				# reverse
+	#print list_gene
+	#print list_beta
+
+	file = open("/Users/shuoyang/Desktop/list_gene_k" + str(k) + "_d" + str(d) + ".txt", 'w')
+	for i in range(1000):							## NOTE: we check only top 1000 genes
+		gene = list_gene[i]
+		file.write(gene + '\n')
+	file.close()
+
+
 
 
 

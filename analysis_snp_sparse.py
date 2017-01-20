@@ -82,15 +82,29 @@ if __name__ == "__main__":
 	##========================================================================================================================
 	## histogram
 	##========================================================================================================================
+	## NOTE: (Jan.19) from index #39, all count become 0
 	list_count = np.load("./result/list_count.npy")
+	list_count = list_count[:39]
+
+
+	##
+	# list_count_new = []
+	# for i in range(len(list_count)):
+	# 	count = list_count[i]
+	# 	if count != 0:
+	# 		list_count_new.append(count)
+	# list_count = np.array(list_count_new)
+	##
+
+
 	plt.hist(list_count, bins=250)  								# plt.hist passes it's arguments to np.histogram
 	plt.title("Histogram with 'auto' bins")
 	plt.xlabel('number of non-zero SNPs')
 	plt.ylabel('frequency of occuring factors')
-	plt.title('distribution of non-zero effect SNP counts among factors')
+	plt.title('distribution of non-zero effect SNP counts among factors (first 39)')
+	#plt.title('distribution of non-zero effect SNP counts among factors (effective)')
 	plt.grid(True)
 	plt.show()
-
 
 
 

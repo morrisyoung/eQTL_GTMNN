@@ -13,9 +13,11 @@ import sys
 
 
 
+
 ## NOTES:
 ##	combine factors for each tissue
 ##	average all batches
+
 
 
 
@@ -27,8 +29,9 @@ if __name__ == "__main__":
 
 
 
+
 	##========================================================================================================================
-	## 
+	## averaging saved results from different batches
 	##========================================================================================================================
 	'''
 	ID = 500
@@ -67,7 +70,7 @@ if __name__ == "__main__":
 
 
 	##========================================================================================================================
-	## 
+	## 500 jobs x 2, single tissue single factor, global Null ES score
 	##========================================================================================================================
 	'''
 	ID = 500
@@ -151,7 +154,7 @@ if __name__ == "__main__":
 
 
 	##========================================================================================================================
-	## compile all the results from several runs
+	## compile all the results from several runs, 5 folders, 200 jobs each (10 tissues x 20 fctors), global ES Null
 	##========================================================================================================================
 	#K = 10
 	D = 20
@@ -183,6 +186,7 @@ if __name__ == "__main__":
 					result.append(array)
 			result = np.array(result)
 			result = result.T
+			nump = len(result[0])
 			print result.shape
 
 			##
@@ -190,6 +194,7 @@ if __name__ == "__main__":
 			list_score = np.load("../workbench71/result/enrich_score_k" + str(k) + "_d" + str(d) + ".npy")
 			list_score_dir = np.sign(list_score)
 			list_score_abs = np.absolute(list_score)
+
 			##
 			list_max = []
 			list_min = []
@@ -200,6 +205,7 @@ if __name__ == "__main__":
 				list_min.append(value_min)
 			np.save("./result/list_max_k" + str(k) + "_d" + str(d), list_max)
 			np.save("./result/list_min_k" + str(k) + "_d" + str(d), list_min)
+
 			##
 			list_p = []
 			for i in range(len(list_set)):
@@ -222,7 +228,7 @@ if __name__ == "__main__":
 			list_p = np.array(list_p)
 
 			#### reformat to .txt, pos and neg enrichment separately
-			file = open("./result/enrich_k" + str(k) + "_d" + str(d) + "_" + "pos.txt", 'w')
+			file = open("./result/enrich_k" + str(k) + "_d" + str(d) + "_pos.txt", 'w')
 			file.write("gene_set_ID\tenrich_direction\tenrich_score\tp_value_empirical\n")
 			for i in range(len(list_set)):
 				set = list_set[i]
@@ -234,7 +240,7 @@ if __name__ == "__main__":
 					file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\t' + str(p) + '\n')
 			file.close()
 			##
-			file = open("./result/enrich_k" + str(k) + "_d" + str(d) + "_" + "neg.txt", 'w')
+			file = open("./result/enrich_k" + str(k) + "_d" + str(d) + "_neg.txt", 'w')
 			file.write("gene_set_ID\tenrich_direction\tenrich_score\tp_value_empirical\n")
 			for i in range(len(list_set)):
 				set = list_set[i]
@@ -245,6 +251,9 @@ if __name__ == "__main__":
 				if score < 0:
 					file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\t' + str(p) + '\n')
 			file.close()
+
+
+
 
 
 

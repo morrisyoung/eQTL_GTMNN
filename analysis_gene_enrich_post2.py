@@ -14,7 +14,10 @@ import matplotlib.lines as mlines
 
 
 
-## plot the P value null
+
+
+## plot the permutation Null for enrichment score P value estimate
+
 
 
 

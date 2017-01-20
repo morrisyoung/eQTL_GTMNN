@@ -26,6 +26,13 @@ list_tissues = ["Thyroid", "Testis", "Skin - Not Sun Exposed (Suprapubic)", "Eso
 
 
 
+## tissues that seem like outliers: k == 6 or k == 16 or k == 27 or k == 1
+
+
+
+
+
+
 
 if __name__ == "__main__":
 
@@ -65,10 +72,12 @@ if __name__ == "__main__":
 
 
 
+	#### NOTE: I'm removing some outlier tissues
+
+
 	##====================================================================================================================
 	## PCA demonstration of factors (Beta)
 	##====================================================================================================================
-	'''
 	K = 28
 
 
@@ -79,7 +88,19 @@ if __name__ == "__main__":
 	##
 	Beta = []
 	for k in range(K):
+
+
+
+
+		## NOTE: drop out some tissues
+		#if k in [6, 16, 27, 1]:
+		if k in [1]:
+			continue
+
+
+
 		beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
+		print k, beta_cellfactor2_sub.shape
 		array = []
 		for i in range(len(beta_cellfactor2_sub)):
 			array += beta_cellfactor2_sub[i].tolist()
@@ -88,7 +109,13 @@ if __name__ == "__main__":
 	Beta = np.array(Beta)
 
 	##==== PCA
-	n_factor = K
+
+	## NOTE: drop out tissues
+	#n_factor = 24
+	n_factor = 27
+
+
+
 	pca = PCA(n_components=n_factor)
 	pca.fit(Beta)								# Beta: K x (D x J)
 	Y2 = (pca.components_).T 					# (D x J) x Factor
@@ -111,7 +138,10 @@ if __name__ == "__main__":
 	##==== timer
 	elapsed = timeit.default_timer() - start_time_total
 	print "time spent totally for this factor:", elapsed
-	'''
+
+
+
+
 
 
 
@@ -177,6 +207,7 @@ if __name__ == "__main__":
 	##====================================================================================================================
 	## plotting
 	##====================================================================================================================
+	'''
 	Y1 = np.load("./result/Y1.npy")
 	#Y2 = np.load("./result/Y2.npy")
 	variance = np.load("./result/variance.npy")
@@ -230,6 +261,7 @@ if __name__ == "__main__":
 	plt.xticks(list_X, list_labels, rotation='vertical')
 	plt.xlabel('PC1 for different tissues (among 24)')
 	plt.show()
+	'''
 
 
 

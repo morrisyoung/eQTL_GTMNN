@@ -15,8 +15,8 @@ This dir contains the following scripts:
 
 Trans- init: The `init_simu.py` simply uses PCA and linear-system solver to init the simulated data, while the `init_real_1.py` (for second layer) and `init_real_2.py` (for first layer) use sparsity solver (LASSO and group LASSO) to get more sparse initialization.
 
-
 Cis- init: use LASSO as the average count of cis- SNPs for genes are too large
 
+Conditional trans-: use the residuals from gene profiles taking away cis- effects
 
 

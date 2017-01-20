@@ -17,6 +17,6 @@ Trans- init: The `init_simu.py` simply uses PCA and linear-system solver to init
 
 Cis- init: use LASSO as the average count of cis- SNPs for genes are too large
 
-Conditional trans-: use the residuals of gene profiles taking away cis- effects
+Conditional trans-: use the residuals from gene profiles taking away cis- effects
 
 

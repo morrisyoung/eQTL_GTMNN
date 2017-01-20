@@ -6,6 +6,12 @@ We have the full model here, and the scripts to make three tests happen:
 2. cis- linear regression
 3. conditional (on cis-) trans- neural net
 
+This dir contains the following scripts:
+
+1. initialization
+2. training
+3. analysis (including plot)
+4. others
 
 Trans- init: The `init_simu.py` simply uses PCA and linear-system solver to init the simulated data, while the `init_real_1.py` (for second layer) and `init_real_2.py` (for first layer) use sparsity solver (LASSO and group LASSO) to get more sparse initialization.
 

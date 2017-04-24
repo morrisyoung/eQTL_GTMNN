@@ -68,7 +68,7 @@ if __name__ == "__main__":
 	J = len(Y[0][0])
 	K = len(Y)
 	N = len(X)
-	D = 400										## TODO: manually set this
+	D = 40										## TODO: manually set this
 	print "shape:"
 	print "I:", I
 	print "J:", J

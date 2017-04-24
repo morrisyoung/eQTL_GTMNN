@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
 
 
-	## fill in the incomp tensor (with tissue mean)
+	## fill in the incomp tensor (with tissue mean) --> this is actually individual mean
 	####========================================================================
 	##==== sample matrix
 	Y_matrix = []

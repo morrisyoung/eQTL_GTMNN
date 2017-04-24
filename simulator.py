@@ -23,9 +23,9 @@ N = 449							# num of individuals
 
 
 ##==== scale of the input data (real data)
-I = 2445192						# num of SNPs
-J = 19425						# num of genes
-D = 400							# num of cell factors
+I = 244519						# num of SNPs
+J = 1942						# num of genes
+D = 40							# num of cell factors
 K = 28							# num of tissues
 N = 449							# num of individuals
 
@@ -192,7 +192,6 @@ if __name__ == "__main__":
 
 
 
-	"""
 	##====================================================
 	## simu real data
 	##====================================================
@@ -249,7 +248,6 @@ if __name__ == "__main__":
 
 	np.save("./data_simu_data/beta_cellfactor1", beta_cellfactor1)
 	np.save("./data_simu_data/beta_cellfactor2", beta_cellfactor2)
-	"""
 
 
 
@@ -276,7 +274,12 @@ if __name__ == "__main__":
 	np.save("./data_simu_init/beta_cellfactor1", beta_cellfactor1)
 	np.save("./data_simu_init/beta_cellfactor2", beta_cellfactor2)
 
-	reformat_matrix(beta_cellfactor1, "./data_simu_init/beta_cellfactor1.txt")
+	#reformat_matrix(beta_cellfactor1, "./data_simu_init/beta_cellfactor1.txt")
+
+
+
+
+
 
 
 

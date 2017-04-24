@@ -78,7 +78,7 @@ if __name__=="__main__":
 	#x = np.arange(0, 201, 1)
 	#y1 = load_array_txt("./result/error_total_online.txt")
 	#y2 = load_array_txt("./result/error_total_online_test.txt")
-	y1 = np.load("./result/list_error.npy")
+	y1 = np.load("./result/list_error_train.npy")
 	y2 = np.load("./result/list_error_test.npy")
 	x = np.arange(0, len(y1), 1)
 

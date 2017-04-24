@@ -214,18 +214,18 @@ def forward_backward_gd():
 	##
 	## NOTE: extract out the cis- component
 	##
-	Y_cis_batch = []
-	for i in range(len(list_tissue_batch)):
-		k = list_tissue_batch[i]
+	# Y_cis_batch = []
+	# for i in range(len(list_tissue_batch)):
+	# 	k = list_tissue_batch[i]
 
-		Y_cis_batch.append([])
-		for pos_indiv in Y_pos_batch[i]:
-			id = str(k) + '-' + str(pos_indiv)
-			expr = repo_Y_cis_train[id]
-			Y_cis_batch[i].append(expr)
+	# 	Y_cis_batch.append([])
+	# 	for pos_indiv in Y_pos_batch[i]:
+	# 		id = str(k) + '-' + str(pos_indiv)
+	# 		expr = repo_Y_cis_train[id]
+	# 		Y_cis_batch[i].append(expr)
 
-		Y_cis_batch[i] = np.array(Y_cis_batch[i])
-	Y_cis_batch = np.array(Y_cis_batch)
+	# 	Y_cis_batch[i] = np.array(Y_cis_batch[i])
+	# Y_cis_batch = np.array(Y_cis_batch)
 	##
 	##
 	##
@@ -237,7 +237,8 @@ def forward_backward_gd():
 	##=============
 	## compile and error cal
 	##=============
-	Y_final_batch = Y_cellfactor_batch + Y_cis_batch
+	#Y_final_batch = Y_cellfactor_batch + Y_cis_batch
+	Y_final_batch = Y_cellfactor_batch
 	Tensor_error_batch = Y_final_batch - Y_batch
 
 
@@ -353,14 +354,18 @@ def cal_error():
 		Y_final = Y_cellfactor
 		list_pos = Y_pos[k]
 		Y_final_sub = Y_final[list_pos]
-		#error = np.sum(np.square(Y[k] - Y_final_sub))
 
 		##
 		##
 		##
+		error = np.sum(np.square(Y[k] - Y_final_sub))
 		##
-		Y_cis_sub = Y_cis_train[k]
-		error = np.sum(np.square(Y[k] - Y_cis_sub - Y_final_sub))
+		##
+		##
+		##
+		##
+		#Y_cis_sub = Y_cis_train[k]
+		#error = np.sum(np.square(Y[k] - Y_cis_sub - Y_final_sub))
 		##
 		##
 		##
@@ -488,7 +493,8 @@ if __name__ == "__main__":
 	##==== load data
 	##
 	#fileheader = "../workbench1/data_simu_data/"
-	fileheader = "../preprocess/data_train/"
+	#fileheader = "../preprocess/data_train/"
+	fileheader = "../workbench_simu1/data_simu_data/"
 
 	#
 	X = np.load(fileheader + "X.npy")
@@ -507,7 +513,8 @@ if __name__ == "__main__":
 	##
 	#fileheader = "../workbench1/data_simu_init/"
 	#fileheader = "../preprocess/data_real_init/"
-	fileheader = "../workbench6/data_real_init/"
+	#fileheader = "../workbench6/data_real_init/"
+	fileheader = "../workbench_simu1/data_simu_init/"
 	#
 	beta_cellfactor1 = np.load(fileheader + "beta_cellfactor1.npy")
 	beta_cellfactor2 = np.load(fileheader + "beta_cellfactor2.npy")
@@ -532,6 +539,7 @@ if __name__ == "__main__":
 	##========================================================================
 	## loading the testing set
 	##========================================================================
+	'''
 	##==== load data
 	fileheader = "../preprocess/data_test/"
 
@@ -554,6 +562,7 @@ if __name__ == "__main__":
 	N_test = len(X_test)
 	array_ones = (np.array([np.ones(N_test)])).T
 	X_test = np.concatenate((X_test, array_ones), axis=1)						# N x (I+1)
+	'''
 
 
 
@@ -565,6 +574,7 @@ if __name__ == "__main__":
 	##==============================================
 	## cis- pre-calculated components
 	##==============================================
+	'''
 	Y_cis_train = np.load("../workbench54/data_real_init/Y_cis_train.npy")
 	Y_cis_test = np.load("../workbench54/data_real_init/Y_cis_test.npy")
 	#repo_Y_cis_train
@@ -573,6 +583,7 @@ if __name__ == "__main__":
 			pos_indiv = Y_pos[k][i]
 			id = str(k) + '-' + str(pos_indiv)
 			repo_Y_cis_train[id] = Y_cis_train[k][i]
+	'''
 
 
 
@@ -597,6 +608,7 @@ if __name__ == "__main__":
 	list_var_data.append(var)
 	print "training set total var:", var
 	# testing set
+	'''
 	Y_flat = []
 	for k in range(K):
 		data = Y_test[k]
@@ -609,6 +621,7 @@ if __name__ == "__main__":
 	print "testing set total var:", var
 	# save
 	np.save("./result/list_var_data", list_var_data)
+	'''
 
 
 
@@ -664,9 +677,9 @@ if __name__ == "__main__":
 			print "[error_before] current total error (train):", error
 			list_error.append(error)
 
-			error = cal_error_test()
-			print "[error_before] current total error (test):", error
-			list_error_test.append(error)
+			#error = cal_error_test()
+			#print "[error_before] current total error (test):", error
+			#list_error_test.append(error)
 			##============================================
 
 
@@ -682,10 +695,10 @@ if __name__ == "__main__":
 		list_error.append(error)
 		np.save("./result/list_error", np.array(list_error))
 
-		error = cal_error_test()
-		print "[error_after] current total error (test):", error
-		list_error_test.append(error)
-		np.save("./result/list_error_test", np.array(list_error_test))
+		#error = cal_error_test()
+		#print "[error_after] current total error (test):", error
+		#list_error_test.append(error)
+		#np.save("./result/list_error_test", np.array(list_error_test))
 		##============================================
 
 

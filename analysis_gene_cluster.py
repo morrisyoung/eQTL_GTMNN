@@ -62,8 +62,9 @@ if __name__ == "__main__":
 
 
 
+	## plot specific factor
+	"""
 	d = 10
-
 	data = []
 	K = 28
 	for k in range(K):
@@ -78,7 +79,19 @@ if __name__ == "__main__":
 		data[-1] = np.array(data[-1])
 	data = np.array(data)
 	X = data
-
+	"""
+	## plot all factors
+	data = []
+	K = 28
+	for k in range(K):
+		data.append([])
+		beta_cellfactor2_sub = np.load("./result_temp/beta2_k" + str(k) + ".npy")
+		for i in range(len(beta_cellfactor2_sub)):
+			array = beta_cellfactor2_sub[i]
+			data[-1] += array.tolist()
+		data[-1] = np.array(data[-1])
+	data = np.array(data)
+	X = data
 
 
 
@@ -101,17 +114,58 @@ if __name__ == "__main__":
 
 
 	# calculate full dendrogram
-	fig = plt.figure(figsize=(15, 15))
 	#plt.figure()
-	plt.title('factor#' + str(d))
+	fig = plt.figure(figsize=(15, 15))
+	ax = plt.subplot()
+
+	#plt.title('factor#' + str(d))
 	plt.xlabel('tissues')
 	plt.ylabel('distance (Euclidean)')
-	dendrogram(
+	d = dendrogram(
 	    Z,
 	    leaf_rotation=90.,  # rotates the x axis labels
 	    leaf_font_size=12.,  # font size for the x axis labels
 	    labels = list_tissues,
+	    color_threshold=1000,
 	)
+	print d['leaves']
+	print d['color_list']
+
+
+	########
+	pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8, pos9 = 3, 5, 10, 13, 15, 17, 20, 23, 26
+	color1, color2, color3, color4, color5, color6, color7, color8, color9, color10 = 'b', 'g', 'r', 'y', 'm', 'cyan', '#348ABD', '#6ACC65', '#988ED5', 'orange'
+	########
+
+
+	list_index = [1, 6, 27, 14, 0, 16, 21, 26, 11, 7, 18, 19, 22, 2, 13, 4, 17, 20, 5, 12, 3, 9, 25, 24, 8, 10, 15, 23]
+
+
+	for i in range(len(ax.get_xticklabels())):
+		xtick = ax.get_xticklabels()[i]
+		if i < pos1:
+			xtick.set_color(color1)
+		elif i < pos2:
+			xtick.set_color(color2)
+		elif i < pos3:
+			xtick.set_color(color3)
+		elif i < pos4:
+			xtick.set_color(color4)
+		elif i < pos5:
+			xtick.set_color(color5)
+		elif i < pos6:
+			xtick.set_color(color6)
+		elif i < pos7:
+			xtick.set_color(color7)
+		elif i < pos8:
+			xtick.set_color(color8)
+		elif i < pos9:
+			xtick.set_color(color9)
+		else:
+			xtick.set_color(color10)
+
+
+
 	plt.show()
 	#plt.savefig("/Users/shuoyang/Desktop/d" + str(d) + ".png")
 	#plt.close(fig)

@@ -128,12 +128,170 @@ if __name__ == "__main__":
 
 
 
+	# ##====================================================================================================================
+	# ## plotting, MDS, 28k
+	# ##====================================================================================================================
+	# ##
+	# ##
+	# ### for 25 tissues
+	# '''
+	# list_tissues_new = []
+	# list_chr_color_new = []
+	# for k in range(28):
+	# 	if k in [6, 27, 1]:
+	# 		continue
+
+	# 	tissue = list_tissues[k]
+	# 	color = list_chr_color[k]
+	# 	list_tissues_new.append(tissue)
+	# 	list_chr_color_new.append(color)
+	# list_tissues = list_tissues_new
+	# list_chr_color = list_chr_color_new
+	# '''
+	# ##
+	# ##
+
+
+	# #Y = np.load("./result/Y_MDS_25k.npy")
+	# Y = np.load("./result/Y_MDS_28k.npy")
+	# #Y = np.load("./result/Y.npy")
+
+
+
+	# ########
+	# ## the following list is learned from code above
+	# list_index = [1, 6, 27, 14, 0, 16, 21, 26, 11, 7, 18, 19, 22, 2, 13, 4, 17, 20, 5, 12, 3, 9, 25, 24, 8, 10, 15, 23]
+	# Y = Y[list_index]
+	# list_tissues = np.array(list_tissues)
+	# list_tissues = list_tissues[list_index]
+	# ########
+
+
+	# ########
+	# list_marker = ['o', 'v', '^', 's', '*', '+', 'x', 'D', 'p']
+	# pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8, pos9 = 3, 5, 10, 13, 15, 17, 20, 23, 26
+	# color1, color2, color3, color4, color5, color6, color7, color8, color9, color10 = 'b', 'g', 'r', 'y', 'm', 'cyan', '#348ABD', '#6ACC65', '#988ED5', 'orange'
+	# ########
+
+
+	# list_handles = []
+	# for k in range(len(Y)):
+
+	# 	#if k == 6 or k == 16 or k == 27 or k == 1:
+	# 	#	continue
+	# 	#if k == 6 or k == 27 or k == 1:
+	# 	#	continue
+
+	# 	## old color scheme
+	# 	#color = list_chr_color[k]
+	# 	## new color scheme
+	# 	if k < pos1:
+	# 		color = color1
+	# 		marker = list_marker[(k - 0) % len(list_marker)]
+	# 	elif k < pos2:
+	# 		color = color2
+	# 		marker = list_marker[(k - pos1) % len(list_marker)]
+	# 	elif k < pos3:
+	# 		color = color3
+	# 		marker = list_marker[(k - pos2) % len(list_marker)]
+	# 	elif k < pos4:
+	# 		color = color4
+	# 		marker = list_marker[(k - pos3) % len(list_marker)]
+	# 	elif k < pos5:
+	# 		color = color5
+	# 		marker = list_marker[(k - pos4) % len(list_marker)]
+	# 	elif k < pos6:
+	# 		color = color6
+	# 		marker = list_marker[(k - pos5) % len(list_marker)]
+	# 	elif k < pos7:
+	# 		color = color7
+	# 		marker = list_marker[(k - pos6) % len(list_marker)]
+	# 	elif k < pos8:
+	# 		color = color8
+	# 		marker = list_marker[(k - pos7) % len(list_marker)]
+	# 	elif k < pos9:
+	# 		color = color9
+	# 		marker = list_marker[(k - pos8) % len(list_marker)]
+	# 	else:
+	# 		color = color10
+	# 		marker = list_marker[(k - pos9) % len(list_marker)]
+
+
+	# 	##
+	# 	plt.plot(Y[k, 0], Y[k, 1], marker = marker, color = color, markersize = 10)
+
+	# 	##
+	# 	tissue = list_tissues[k]
+	# 	line = mlines.Line2D([], [], marker=marker, markersize = 10, color=color, label=tissue, linestyle = 'None')
+	# 	list_handles.append(line)
+
+
+	# leg = plt.legend(handles=list_handles, ncol=1, loc = 1, fancybox=True, numpoints=1, bbox_to_anchor=(1.7, 1))
+
+
+	# ########
+	# for k in range(len(leg.get_texts())):
+	# 	text = leg.get_texts()[k]
+	# 	if k < pos1:
+	# 		color = color1
+	# 		text.set_color(color)
+	# 	elif k < pos2:
+	# 		color = color2
+	# 		text.set_color(color)
+	# 	elif k < pos3:
+	# 		color = color3
+	# 		text.set_color(color)
+	# 	elif k < pos4:
+	# 		color = color4
+	# 		text.set_color(color)
+	# 	elif k < pos5:
+	# 		color = color5
+	# 		text.set_color(color)
+	# 	elif k < pos6:
+	# 		color = color6
+	# 		text.set_color(color)
+	# 	elif k < pos7:
+	# 		color = color7
+	# 		text.set_color(color)
+	# 	elif k < pos8:
+	# 		color = color8
+	# 		text.set_color(color)
+	# 	elif k < pos9:
+	# 		color = color9
+	# 		text.set_color(color)
+	# 	else:
+	# 		color = color10
+	# 		text.set_color(color)
+	# ########
+
+
+
+	# plt.xlabel('coordinate 1')
+	# plt.ylabel('coordinate 2')
+	# #plt.axis([-1000, 4000, -1000, 800])			## with legend inside the window
+	# plt.axis([-1000, 2500, -1000, 800])
+
+	# #plt.axis([-600, 1400, -800, 600])
+	# #plt.title('MDS for 28 tissue parameters')
+	# plt.show()
+
+
+
+
+
+
+
+
+
+
+
 	##====================================================================================================================
-	## plotting
+	## plotting, MDS, 25k
 	##====================================================================================================================
 	##
 	##
 	### for 25 tissues
+	'''
 	list_tissues_new = []
 	list_chr_color_new = []
 	for k in range(28):
@@ -146,38 +304,112 @@ if __name__ == "__main__":
 		list_chr_color_new.append(color)
 	list_tissues = list_tissues_new
 	list_chr_color = list_chr_color_new
+	'''
 	##
 	##
+
 
 	Y = np.load("./result/Y_MDS_25k.npy")
 	#Y = np.load("./result/Y_MDS_28k.npy")
 	#Y = np.load("./result/Y.npy")
 
-	list_handles = []
-	for k in range(len(Y)):
 
-		#if k == 6 or k == 16 or k == 27 or k == 1:
-		#	continue
-		#if k == 6 or k == 27 or k == 1:
-		#	continue
+
+	######## complete Y
+	Y_new = []
+	index = 0
+	for k in range(28):
+		if k in [6, 27, 1]:
+			Y_new.append([0, 0])
+		else:
+			Y_new.append(Y[index])
+			index += 1
+	Y = np.array(Y_new)
+	########
+
+
+
+	########
+	## the following list is learned from code above
+	list_index = [1, 6, 27, 14, 0, 16, 21, 26, 11, 7, 18, 19, 22, 2, 13, 4, 17, 20, 5, 12, 3, 9, 25, 24, 8, 10, 15, 23]
+	Y = Y[list_index]
+	list_tissues = np.array(list_tissues)
+	list_tissues = list_tissues[list_index]
+	########
+
+
+	########
+	list_marker = ['o', 'v', '^', 's', '*', '+', 'x', 'D', 'p']
+	pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8, pos9 = 3, 5, 10, 13, 15, 17, 20, 23, 26
+	color1, color2, color3, color4, color5, color6, color7, color8, color9, color10 = 'b', 'g', 'r', 'y', 'm', 'cyan', '#348ABD', '#6ACC65', '#988ED5', 'orange'
+	########
+
+
+	list_handles = []
+	for k in range(3, len(Y)):
+
+		## old color scheme
+		#color = list_chr_color[k]
+		## new color scheme
+		if k < pos1:
+			color = color1
+			marker = list_marker[(k - 0) % len(list_marker)]
+		elif k < pos2:
+			color = color2
+			marker = list_marker[(k - pos1) % len(list_marker)]
+		elif k < pos3:
+			color = color3
+			marker = list_marker[(k - pos2) % len(list_marker)]
+		elif k < pos4:
+			color = color4
+			marker = list_marker[(k - pos3) % len(list_marker)]
+		elif k < pos5:
+			color = color5
+			marker = list_marker[(k - pos4) % len(list_marker)]
+		elif k < pos6:
+			color = color6
+			marker = list_marker[(k - pos5) % len(list_marker)]
+		elif k < pos7:
+			color = color7
+			marker = list_marker[(k - pos6) % len(list_marker)]
+		elif k < pos8:
+			color = color8
+			marker = list_marker[(k - pos7) % len(list_marker)]
+		elif k < pos9:
+			color = color9
+			marker = list_marker[(k - pos8) % len(list_marker)]
+		else:
+			color = color10
+			marker = list_marker[(k - pos9) % len(list_marker)]
+
 
 		##
-		color = list_chr_color[k]
-		plt.plot(Y[k, 0], Y[k, 1], marker = 'o', color = color, markersize = 10)
+		plt.plot(Y[k, 0], Y[k, 1], marker = marker, color = color, markersize = 10)
 
 		##
 		tissue = list_tissues[k]
-		line = mlines.Line2D([], [], marker='o', markersize = 10, color=color, label=tissue, linestyle = 'None')
+		line = mlines.Line2D([], [], marker=marker, markersize = 10, color=color, label=tissue, linestyle = 'None')
 		list_handles.append(line)
 
 
-	plt.legend(handles=list_handles, ncol=1, loc = 1, fancybox=True, numpoints=1)
 	plt.xlabel('coordinate 1')
 	plt.ylabel('coordinate 2')
-	#plt.axis([-1000, 4000, -1000, 800])
-	plt.axis([-600, 1400, -800, 600])
-	plt.title('MDS for 28 tissue parameters')
+	#plt.axis([-1000, 4000, -1000, 800])			## with legend inside the window
+	#plt.axis([-1000, 2500, -1000, 800])
+
+	plt.axis([-600, 600, -800, 600])
+	#plt.title('MDS for 28 tissue parameters')
 	plt.show()
+
+
+
+
+
+
+
+
+
+
 
 
 

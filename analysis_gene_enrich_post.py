@@ -153,9 +153,11 @@ if __name__ == "__main__":
 
 
 
+
 	##========================================================================================================================
 	## compile all the results from several runs, 5 folders, 200 jobs each (10 tissues x 20 fctors), global ES Null
 	##========================================================================================================================
+	'''
 	#K = 10
 	D = 20
 
@@ -172,7 +174,9 @@ if __name__ == "__main__":
 	file.close()
 
 	##
-	list_filename = ["workbench71", "workbench72", "workbench73", "workbench75", "workbench76"]
+	#list_filename = ["workbench71", "workbench72", "workbench73", "workbench75", "workbench76"]
+	#list_filename = ["workbench71", "workbench72", "workbench73", "workbench75", "workbench76"]
+	list_filename = ["workbench77", "workbench78", "workbench79", "workbench710", "workbench711"]
 
 	##
 	for k in list_tissues:
@@ -190,8 +194,10 @@ if __name__ == "__main__":
 			print result.shape
 
 			##
-			list_set = np.load("../workbench71/result/enrich_set_k" + str(k) + "_d" + str(d) + ".npy")
-			list_score = np.load("../workbench71/result/enrich_score_k" + str(k) + "_d" + str(d) + ".npy")
+			#list_set = np.load("../workbench71/result/enrich_set_k" + str(k) + "_d" + str(d) + ".npy")
+			#list_score = np.load("../workbench71/result/enrich_score_k" + str(k) + "_d" + str(d) + ".npy")
+			list_set = np.load("../workbench77/result/enrich_set_k" + str(k) + "_d" + str(d) + ".npy")
+			list_score = np.load("../workbench77/result/enrich_score_k" + str(k) + "_d" + str(d) + ".npy")
 			list_score_dir = np.sign(list_score)
 			list_score_abs = np.absolute(list_score)
 
@@ -251,6 +257,76 @@ if __name__ == "__main__":
 				if score < 0:
 					file.write(str(set) + '\t' + str(score_dir) + '\t' + str(score_abs) + '\t' + str(p) + '\n')
 			file.close()
+	'''
+
+
+
+
+
+
+
+
+	##========================================================================================================================
+	## further processing of the above results, to leave only items with FDR as 0.1 (this is manually specified)
+	##========================================================================================================================
+	#K = 10
+	D = 20
+
+	##
+	file = open("./list_tissues.txt", 'r')
+	list_tissues = []
+	while 1:
+		line = (file.readline()).strip()
+		if not line:
+			break
+
+		tissue = int(line)
+		list_tissues.append(tissue)
+	file.close()
+
+	##
+	FDR = 0.1
+	for k in list_tissues:
+		for d in range(D):
+			for suffix in ['pos', 'neg']:
+				##
+				print k, d, suffix
+
+				##
+				data = []
+				list_p = []
+				file = open("./result/enrich_k" + str(k) + "_d" + str(d) + "_" + suffix + ".txt", 'r')
+				file.readline()
+				while 1:
+					line = (file.readline()).strip()
+					if not line:
+						break
+
+					data.append(line)
+					line = line.split('\t')
+					p = float(line[3])
+					list_p.append(p)
+				file.close()
+
+				##
+				data_new = []
+				sum = 0
+				for i in range(len(list_p)):
+					p = list_p[i]
+					sum += p
+					ave = sum / (i+1)
+					if ave <= FDR:
+						data_new.append(data[i])
+					else:
+						break
+
+				##
+				file = open("./result/enrich_top_k" + str(k) + "_d" + str(d) + "_" + suffix + ".txt", 'w')
+				file.write("gene_set_ID\tenrich_direction\tenrich_score\tp_value_empirical\n")
+				for item in data_new:
+					file.write(item + '\n')
+				file.close()
+
 
 
 
